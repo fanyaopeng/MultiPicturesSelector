@@ -1,8 +1,11 @@
 package com.fan.library;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -11,19 +14,18 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.LruCache;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.io.File;
@@ -40,12 +42,14 @@ public class MultiPicturesSelectorActivity extends Activity {
     private List<String> mAllPictures = new ArrayList<>();
     private List<String> mAllDirs = new ArrayList<>();
     private RecyclerView mList;
-    private PicturesAdapter mAdapter;
+    private PicturesAdapter mPictureAdapter;
     private ExecutorService mService;
     public int mItemSize;
     private int mItemMargin;
     private List<String> mCheckPaths = new ArrayList<>();
     private TextView tvPreviewNum;
+    private RecyclerView mDirList;
+    private TextView mCurDir;
     private LruCache<String, Bitmap> cache = new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory() / 8)) {
         @Override
         protected int sizeOf(String key, Bitmap value) {
@@ -58,11 +62,14 @@ public class MultiPicturesSelectorActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multi_pictures_selector);
         mList = findViewById(R.id.list);
+        mDirList = findViewById(R.id.dir_list);
         mList.setLayoutManager(new GridLayoutManager(this, 4));
         mList.addItemDecoration(new Decoration());
         mService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         mItemMargin = Utils.dp2px(this, 0.5f);
         mItemSize = (getWidth() - mItemMargin * 5) / 4;
+        mCurDir = findViewById(R.id.tv_type);
+        root = findViewById(R.id.root);
         init();
         tvPreviewNum = findViewById(R.id.tv_preview_num);
     }
@@ -74,40 +81,131 @@ public class MultiPicturesSelectorActivity extends Activity {
         return point.x;
     }
 
+    private int getHeight() {
+        Point point = new Point();
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager.getDefaultDisplay().getSize(point);
+        return point.y;
+    }
+
     private void init() {
         mService.submit(new ReadTask());
     }
 
-    private SelectDialog mPop;
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mDirList.getLayoutParams();
+        params.height = getHeight() * 3 / 4;
+    }
 
     public void SelectType(final View view) {
-        if (mPop == null) mPop = new SelectDialog(this, mAllDirs);
-        mPop.setOnItemClickListener(new SelectDialog.OnItemClickListener() {
+        if (mDirList.getAdapter() == null) {
+            mDirList.setLayoutManager(new LinearLayoutManager(this));
+            mDirList.setAdapter(new DirsAdapter());
+            mDirList.setTranslationY(mDirList.getHeight());
+        }
+        if (mDirList.getTranslationY() == 0) {
+            //目前显示中
+            animHide();
+        }
+        if (mDirList.getTranslationY() == mDirList.getHeight()) {
+            //现在隐藏中
+            animEnter();
+        }
+    }
+
+    private RelativeLayout root;
+
+
+    @Override
+    public void onBackPressed() {
+        if (!isHide()) {
+            animHide();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    private boolean isHide() {
+        return mDirList.getTranslationY() == mDirList.getHeight();
+    }
+
+    private void animEnter() {
+        mDirList.animate().translationYBy(-mDirList.getHeight()).setDuration(500).setListener(new AnimatorListenerAdapter() {
             @Override
-            public void onItemClick(String path) {
-                int index = path.lastIndexOf(File.separator);
-                TextView tv = (TextView) view;
-                String selectPath = path.substring(index + 1);
-                if (tv.getText().equals(selectPath)) {
-                    return;
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+            }
+        }).start();
+    }
+
+    private void animHide() {
+        mDirList.animate().translationYBy(mDirList.getHeight()).setDuration(500).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+            }
+        }).start();
+    }
+
+    private class DirsAdapter extends RecyclerView.Adapter<DirsAdapter.VH> {
+
+        @Override
+        public VH onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new VH(LayoutInflater.from(parent.getContext()).inflate(R.layout.pop_item, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(VH holder, final int position) {
+            final String parentPath = mAllDirs.get(position);
+            int index = parentPath.lastIndexOf(File.separator);
+            holder.tvName.setText(parentPath.substring(index + 1));
+            ImageView preview = holder.preview;
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) preview.getLayoutParams();
+            params.width = mItemSize;
+            params.height = mItemSize;
+            String prePath = getFirstPic(parentPath);
+            mService.submit(new CompressTask(prePath, preview));
+            int len[] = new int[1];
+            getFileNum(parentPath, len);
+            holder.tvNum.setText(len[0] + "张");
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    animHide();
+                    String path = mAllDirs.get(position);
+                    int index = path.lastIndexOf(File.separator);
+                    TextView tv = mCurDir;
+                    String selectPath = path.substring(index + 1);
+                    if (tv.getText().equals(selectPath)) {
+                        return;
+                    }
+                    tv.setText(selectPath);
+                    mAllPictures.clear();
+                    setSelectPictures(path);
+                    mPictureAdapter.notifyDataSetChanged();
                 }
-                tv.setText(selectPath);
-                mAllPictures.clear();
-                setSelectPictures(path);
-                mAdapter.notifyDataSetChanged();
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return mAllDirs.size();
+        }
+
+        public class VH extends RecyclerView.ViewHolder {
+            ImageView preview;
+            TextView tvName;
+            TextView tvNum;
+
+            public VH(View itemView) {
+                super(itemView);
+                preview = itemView.findViewById(R.id.img_dir_preview);
+                tvName = itemView.findViewById(R.id.tv_name);
+                tvNum = itemView.findViewById(R.id.tv_num);
             }
-        });
-        mPop.showAtLocation(findViewById(R.id.bottom), Gravity.BOTTOM, 0, Utils.dp2px(this, 44));
-        final WindowManager.LayoutParams params = getWindow().getAttributes();
-        params.alpha = 0.3f;
-        getWindow().setAttributes(params);
-        mPop.setOnDismissListener(new PopupWindow.OnDismissListener() {
-            @Override
-            public void onDismiss() {
-                params.alpha = 1;
-                getWindow().setAttributes(params);
-            }
-        });
+        }
     }
 
     private void setSelectPictures(String path) {
@@ -119,6 +217,52 @@ public class MultiPicturesSelectorActivity extends Activity {
                 }
             } else {
                 setSelectPictures(file.getAbsolutePath());
+            }
+        }
+    }
+
+    private String traversalFile(String path) {
+        File[] files = new File(path).listFiles();
+        for (File file : files) {
+            if (file.isFile()) {
+                if (Utils.isPicture(file)) {
+                    return file.getAbsolutePath();
+                }
+            } else {
+                return traversalFile(file.getAbsolutePath());
+            }
+        }
+        return null;
+    }
+
+    private String getFirstPic(String path) {
+        File[] files = new File(path).listFiles();
+        String result;
+        for (File file : files) {
+            if (file.isFile()) {
+                if (Utils.isPicture(file)) {
+                    return file.getAbsolutePath();
+                }
+            } else {
+                result = traversalFile(file.getAbsolutePath());
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        //遍历了所有的目录
+        return null;
+    }
+
+    private void getFileNum(String path, int[] result) {
+        File[] files = new File(path).listFiles();
+        for (File file : files) {
+            if (file.isFile()) {
+                if (Utils.isPicture(file)) {
+                    result[0]++;
+                }
+            } else {
+                getFileNum(file.getAbsolutePath(), result);
             }
         }
     }
@@ -147,8 +291,8 @@ public class MultiPicturesSelectorActivity extends Activity {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 1) {
-                mAdapter = new PicturesAdapter();
-                mList.setAdapter(mAdapter);
+                mPictureAdapter = new PicturesAdapter();
+                mList.setAdapter(mPictureAdapter);
                 return true;
             }
             return false;
