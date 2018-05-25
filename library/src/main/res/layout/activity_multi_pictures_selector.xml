@@ -17,7 +17,6 @@
             android:src="@mipmap/ic_back" />
 
         <TextView
-
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -26,9 +25,16 @@
             android:textColor="@android:color/white" />
 
         <TextView
-
+            android:id="@+id/tv_complete"
+            android:layout_marginRight="12dp"
+            android:gravity="center_vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="12dp"
+            android:text="完成"
+            android:textColor="@android:color/white" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -56,10 +62,10 @@
         </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
-            android:layout_alignParentBottom="true"
             android:id="@+id/dir_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true">
 
         </android.support.v7.widget.RecyclerView>
     </RelativeLayout>
@@ -79,18 +85,20 @@
             android:onClick="SelectType"
             android:text="所有图片"
             android:textColor="#fff" />
+
         <LinearLayout
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="12dp"
                 android:gravity="center"
                 android:onClick="SelectType"
-                android:text="预览"
+                android:text="已选"
                 android:textColor="#fff" />
 
             <TextView

@@ -3,6 +3,7 @@ package com.fan.library;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -95,6 +96,21 @@ public class MultiPicturesSelectorActivity extends Activity {
                 }
             }
         });
+        findViewById(R.id.ic_back).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
+        findViewById(R.id.tv_complete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPaths);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        });
     }
 
     private int getWidth() {
@@ -115,7 +131,7 @@ public class MultiPicturesSelectorActivity extends Activity {
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mDirList.getLayoutParams();
-        params.height = mContainer.getHeight() * 5/ 6;
+        params.height = mContainer.getHeight() * 5 / 6;
     }
 
     public void SelectType(View view) {
