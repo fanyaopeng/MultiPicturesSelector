@@ -1,60 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/list"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="#333333">
+
+        <ImageView
+            android:id="@+id/ic_back"
+            android:layout_width="44dp"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:src="@mipmap/ic_back" />
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/ic_back"
+            android:text="选择图片"
+            android:textColor="@android:color/white" />
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/rel_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/bottom">
+        android:layout_above="@+id/bottom"
+        android:layout_weight="1">
 
-    </android.support.v7.widget.RecyclerView>
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/dir_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/bottom">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    </android.support.v7.widget.RecyclerView>
+        </android.support.v7.widget.RecyclerView>
 
-    <LinearLayout
+        <LinearLayout
+            android:id="@+id/shadow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#88000000"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+        </LinearLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:layout_alignParentBottom="true"
+            android:id="@+id/dir_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        </android.support.v7.widget.RecyclerView>
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/bottom"
         android:layout_width="match_parent"
         android:layout_height="44dp"
-        android:layout_alignParentBottom="true"
         android:background="#333333">
 
         <TextView
             android:id="@+id/tv_type"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginLeft="12dp"
-            android:layout_weight="1"
             android:gravity="center_vertical"
             android:onClick="SelectType"
             android:text="所有图片"
             android:textColor="#fff" />
-
-        <TextView
+        <LinearLayout
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="12dp"
-            android:gravity="center"
-            android:onClick="SelectType"
-            android:text="预览"
-            android:textColor="#fff" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="12dp"
+                android:gravity="center"
+                android:onClick="SelectType"
+                android:text="预览"
+                android:textColor="#fff" />
 
-        <TextView
-            android:id="@+id/tv_preview_num"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginRight="12dp"
-            android:gravity="center"
-            android:onClick="SelectType"
-            android:text=""
-            android:textColor="#fff" />
-    </LinearLayout>
-</RelativeLayout>
+            <TextView
+                android:id="@+id/tv_preview_num"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="12dp"
+                android:gravity="center"
+                android:onClick="SelectType"
+                android:text=""
+                android:textColor="#fff" />
+        </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>

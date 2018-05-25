@@ -8,14 +8,17 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,8 +28,10 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,6 +55,7 @@ public class MultiPicturesSelectorActivity extends Activity {
     private TextView tvPreviewNum;
     private RecyclerView mDirList;
     private TextView mCurDir;
+    private LinearLayout mShadow;
     private LruCache<String, Bitmap> cache = new LruCache<String, Bitmap>((int) (Runtime.getRuntime().maxMemory() / 8)) {
         @Override
         protected int sizeOf(String key, Bitmap value) {
@@ -61,6 +67,14 @@ public class MultiPicturesSelectorActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multi_pictures_selector);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(Color.parseColor("#333333"));
+        }
+        initView();
+        init();
+    }
+
+    private void initView() {
         mList = findViewById(R.id.list);
         mDirList = findViewById(R.id.dir_list);
         mList.setLayoutManager(new GridLayoutManager(this, 4));
@@ -69,9 +83,18 @@ public class MultiPicturesSelectorActivity extends Activity {
         mItemMargin = Utils.dp2px(this, 0.5f);
         mItemSize = (getWidth() - mItemMargin * 5) / 4;
         mCurDir = findViewById(R.id.tv_type);
-        root = findViewById(R.id.root);
-        init();
         tvPreviewNum = findViewById(R.id.tv_preview_num);
+        mShadow = findViewById(R.id.shadow);
+        mContainer = findViewById(R.id.rel_container);
+
+        mShadow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isShow()) {
+                    animHide();
+                }
+            }
+        });
     }
 
     private int getWidth() {
@@ -81,27 +104,23 @@ public class MultiPicturesSelectorActivity extends Activity {
         return point.x;
     }
 
-    private int getHeight() {
-        Point point = new Point();
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getSize(point);
-        return point.y;
-    }
 
     private void init() {
         mService.submit(new ReadTask());
     }
 
+    private RelativeLayout mContainer;
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mDirList.getLayoutParams();
-        params.height = getHeight() * 3 / 4;
+        params.height = mContainer.getHeight() * 5/ 6;
     }
 
-    public void SelectType(final View view) {
+    public void SelectType(View view) {
         if (mDirList.getAdapter() == null) {
-            mDirList.setLayoutManager(new LinearLayoutManager(this));
+            mDirList.setLayoutManager(new LinearLayoutManager(MultiPicturesSelectorActivity.this));
             mDirList.setAdapter(new DirsAdapter());
             mDirList.setTranslationY(mDirList.getHeight());
         }
@@ -115,24 +134,22 @@ public class MultiPicturesSelectorActivity extends Activity {
         }
     }
 
-    private RelativeLayout root;
-
-
     @Override
     public void onBackPressed() {
-        if (!isHide()) {
+        if (isShow()) {
             animHide();
             return;
         }
         super.onBackPressed();
     }
 
-    private boolean isHide() {
-        return mDirList.getTranslationY() == mDirList.getHeight();
+    private boolean isShow() {
+        return mDirList.getTranslationY() == 0;
     }
 
     private void animEnter() {
-        mDirList.animate().translationYBy(-mDirList.getHeight()).setDuration(500).setListener(new AnimatorListenerAdapter() {
+        mShadow.setVisibility(View.VISIBLE);
+        mDirList.animate().translationYBy(-mDirList.getHeight()).setDuration(300).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
@@ -141,10 +158,11 @@ public class MultiPicturesSelectorActivity extends Activity {
     }
 
     private void animHide() {
-        mDirList.animate().translationYBy(mDirList.getHeight()).setDuration(500).setListener(new AnimatorListenerAdapter() {
+        mDirList.animate().translationYBy(mDirList.getHeight()).setDuration(300).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
+                mShadow.setVisibility(View.GONE);
             }
         }).start();
     }
@@ -293,6 +311,8 @@ public class MultiPicturesSelectorActivity extends Activity {
             if (msg.what == 1) {
                 mPictureAdapter = new PicturesAdapter();
                 mList.setAdapter(mPictureAdapter);
+
+
                 return true;
             }
             return false;
