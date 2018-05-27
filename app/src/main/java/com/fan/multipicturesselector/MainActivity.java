@@ -3,6 +3,7 @@ package com.fan.multipicturesselector;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -18,6 +19,9 @@ import android.widget.ImageView;
 import com.fan.library.MultiPicturesSelectorActivity;
 import com.fan.library.Utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
             imageViews.clear();
             for (String p : paths) {
                 ImageView imageView = new ImageView(MainActivity.this);
-                imageView.setImageBitmap(Utils.compress(p, MainActivity.this.getResources().getDisplayMetrics().widthPixels, vp.getHeight()));
+                Bitmap result = Utils.compress(p, MainActivity.this.getResources().getDisplayMetrics().widthPixels, vp.getHeight());
+                imageView.setImageBitmap(result);
                 imageViews.add(imageView);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             }

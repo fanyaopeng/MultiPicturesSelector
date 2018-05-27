@@ -3,5 +3,6 @@
 
     <application>
         <activity android:name=".MultiPicturesSelectorActivity" />
+        <activity android:name=".PreviewActivity" />
     </application>
 </manifest>

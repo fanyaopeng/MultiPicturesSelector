@@ -28,4 +28,9 @@ public class Utils {
         }
         return false;
     }
+
+    public static boolean isGif(String path) {
+
+        return path.endsWith("gif");
+    }
 }
