@@ -1,4 +1,4 @@
-package com.fan.library;
+package com.fan.library.view;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -7,6 +7,8 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.fan.library.R;
 
 public class CheckImageView extends ImageView {
     private boolean isChecked;

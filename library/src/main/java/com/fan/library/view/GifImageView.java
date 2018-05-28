@@ -1,4 +1,4 @@
-package com.fan.library;
+package com.fan.library.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;

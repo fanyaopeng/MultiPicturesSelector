@@ -3,4 +3,5 @@
     <color name="green">#00aa00</color>
     <color name="shadow">#88000000</color>
     <color name="status_bar">#333333</color>
+    <color name="line">#dfdfdf</color>
 </resources>

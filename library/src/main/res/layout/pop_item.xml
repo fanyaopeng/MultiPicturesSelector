@@ -5,13 +5,28 @@
     android:background="@android:color/white"
     android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/img_dir_preview"
+    <FrameLayout
+        android:id="@+id/pre_parent"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginLeft="12dp"
-        android:layout_marginTop="12dp"
-        android:scaleType="centerCrop" />
+        android:layout_marginTop="12dp">
+
+        <ImageView
+            android:id="@+id/img_dir_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginBottom="3dp"
+            android:layout_marginRight="3dp"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="end|bottom"
+            android:src="@mipmap/ic_folding_dirs" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tv_name"
@@ -20,7 +35,7 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="12dp"
-        android:layout_toRightOf="@+id/img_dir_preview"
+        android:layout_toRightOf="@+id/pre_parent"
         android:text=""
         android:textSize="16sp" />
 
@@ -28,11 +43,11 @@
         android:id="@+id/tv_num"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/img_dir_preview"
+        android:layout_alignBottom="@id/pre_parent"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="12dp"
-        android:layout_toRightOf="@+id/img_dir_preview"
+        android:layout_toRightOf="@+id/pre_parent"
         android:text="" />
 
     <ImageView
@@ -47,9 +62,9 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:layout_below="@+id/img_dir_preview"
+        android:layout_below="@+id/pre_parent"
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"
         android:layout_marginTop="5dp"
-        android:background="#dfdfdf" />
+        android:background="@color/line" />
 </RelativeLayout>

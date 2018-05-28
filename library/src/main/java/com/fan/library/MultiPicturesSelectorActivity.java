@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import com.fan.library.info.Folder;
 import com.fan.library.info.ImageInfo;
+import com.fan.library.view.CheckImageView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -208,24 +209,20 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         @Override
         public void onBindViewHolder(final VH holder, final int position) {
+            ImageView preview = holder.preview;
+            FrameLayout imgParent = (FrameLayout) preview.getParent();
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) imgParent.getLayoutParams();
+            params.width = size;
+            params.height = size;
             if (holder.getItemViewType() == -1) {
                 holder.tvName.setText(type_all);
                 holder.tvNum.setText(mAllPictures.size() + "张");
-
-                ImageView preview = holder.preview;
-                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) preview.getLayoutParams();
-                params.width = size;
-                params.height = size;
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
                         mAllPictures.get(0).getPath(), preview, size, size));
             } else {
                 String parentPath = mAllDirs.get(position).getPath();
                 int index = parentPath.lastIndexOf(File.separator);
                 holder.tvName.setText(parentPath.substring(index + 1));
-                ImageView preview = holder.preview;
-                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) preview.getLayoutParams();
-                params.width = size;
-                params.height = size;
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
                         mAllDirs.get(position).getImageInfos().get(0).getPath(), preview, size, size));
                 holder.tvNum.setText(mAllDirs.get(position).getImageInfos().size() + "张");
@@ -341,7 +338,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 mDirList.setLayoutManager(new LinearLayoutManager(MultiPicturesSelectorActivity.this));
                 mDirList.setAdapter(new DirsAdapter());
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mDirList.getLayoutParams();
-                int mTranslateSize = mContainer.getHeight() * 5 / 6;
+                int mTranslateSize = mContainer.getHeight() * 7 / 8;
                 params.height = mTranslateSize;
                 mDirList.setLayoutParams(params);
                 mDirList.setTranslationY(mTranslateSize);
@@ -372,15 +369,17 @@ public class MultiPicturesSelectorActivity extends Activity {
             holder.ckParent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mCheckPaths.size() == mMaxNum) {
-                        Toast.makeText(MultiPicturesSelectorActivity.this, "你最多只能选择" + mMaxNum + "张图片", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
                     FrameLayout parent = (FrameLayout) v;
                     CheckImageView view = (CheckImageView) parent.getChildAt(0);
                     boolean isChecked = view.isChecked();
                     view.setChecked(!isChecked);
                     if (view.isChecked() && !mCheckPaths.contains(path)) {
+
+                        if (mCheckPaths.size() == mMaxNum) {
+                            Toast.makeText(MultiPicturesSelectorActivity.this, "你最多只能选择" + mMaxNum + "张图片", Toast.LENGTH_SHORT).show();
+                            view.setChecked(false);
+                            return;
+                        }
                         holder.shadow.setVisibility(View.VISIBLE);
                         mCheckPaths.add(path);
                     } else {

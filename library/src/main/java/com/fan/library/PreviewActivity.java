@@ -2,19 +2,16 @@ package com.fan.library;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
+
+import com.fan.library.view.GifImageView;
 
 import java.util.ArrayList;
 import java.util.List;
