@@ -2,7 +2,8 @@
     package="com.fan.library" >
 
     <application>
-        <activity android:name=".MultiPicturesSelectorActivity" />
-        <activity android:name=".PreviewActivity" />
+        <activity android:name=".activity.MultiPicturesSelectorActivity" />
+        <activity android:name=".activity.PreviewActivity" />
+        <activity android:name=".activity.EditImageViewActivity" />
     </application>
 </manifest>

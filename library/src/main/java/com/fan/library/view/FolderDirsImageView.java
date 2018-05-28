@@ -6,11 +6,10 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.fan.library.R;
-import com.fan.library.Utils;
+import com.fan.library.utils.Utils;
 
 public class FolderDirsImageView extends ImageView {
     private Paint mPaint;

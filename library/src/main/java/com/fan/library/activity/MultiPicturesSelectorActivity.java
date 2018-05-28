@@ -1,4 +1,4 @@
-package com.fan.library;
+package com.fan.library.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -29,6 +29,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fan.library.utils.DisplayImageTask;
+import com.fan.library.R;
+import com.fan.library.utils.Utils;
 import com.fan.library.info.Folder;
 import com.fan.library.info.ImageInfo;
 import com.fan.library.view.CheckImageView;
