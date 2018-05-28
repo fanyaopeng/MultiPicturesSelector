@@ -113,6 +113,7 @@ public class MultiPicturesSelectorActivity extends Activity {
         findViewById(R.id.ll_preview).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mCheckPaths.size() == 0) return;
                 Intent intent = new Intent(MultiPicturesSelectorActivity.this, PreviewActivity.class);
                 intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPaths);
                 startActivity(intent);

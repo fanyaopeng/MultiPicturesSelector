@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical">
-    <android.support.v4.view.ViewPager
-        android:id="@+id/vp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1">
 
-    </android.support.v4.view.ViewPager>
     <RelativeLayout
-        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="@color/status_bar">
@@ -23,12 +16,22 @@
             android:layout_centerVertical="true"
             android:src="@mipmap/ic_back" />
 
+        <View
+            android:id="@+id/line"
+            android:layout_width="0.5dp"
+            android:layout_height="25dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/ic_back"
+            android:background="#77000000" />
+
         <TextView
+            android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/ic_back"
-            android:text="1/12"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/line"
+            android:text=""
             android:textColor="@android:color/white"
             android:textSize="18sp" />
 
@@ -47,20 +50,4 @@
             android:text="完成"
             android:textColor="@android:color/white" />
     </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_alignParentBottom="true"
-        android:paddingLeft="12dp"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@color/status_bar">
-
-        <TextView
-            android:id="@+id/tv_edit"
-            android:layout_width="44dp"
-            android:layout_height="20dp"
-            android:layout_centerVertical="true"
-            android:text="编辑"
-            android:textColor="@android:color/white" />
-    </RelativeLayout>
-</RelativeLayout>
+</LinearLayout>

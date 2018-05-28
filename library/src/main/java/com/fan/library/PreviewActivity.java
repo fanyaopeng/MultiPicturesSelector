@@ -2,6 +2,7 @@ package com.fan.library;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.fan.library.view.GifImageView;
 
@@ -19,16 +21,17 @@ import java.util.List;
 public class PreviewActivity extends Activity {
     private ViewPager vp;
     private List<String> paths;
+    private RelativeLayout mTopBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            getWindow().setStatusBarColor(getResources().getColor(R.color.status_bar));
-//        }
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(getResources().getColor(R.color.status_bar));
+        }
         vp = findViewById(R.id.vp);
+        mTopBar = findViewById(R.id.top_bar);
         paths = getIntent().getStringArrayListExtra("paths");
     }
 
@@ -76,12 +79,31 @@ public class PreviewActivity extends Activity {
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
             container.addView(imageViews.get(position));
+            imageViews.get(position).setOnClickListener(new HandleSingleTap());
             return imageViews.get(position);
         }
 
         @Override
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             container.removeView(imageViews.get(position));
+        }
+    }
+
+    private boolean isShow = true;
+
+    private class HandleSingleTap implements View.OnClickListener {
+
+        @Override
+        public void onClick(View v) {
+            if (isShow) {
+                isShow = false;
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                mTopBar.animate().translationYBy(-mTopBar.getHeight()).setDuration(200).start();
+            } else {
+                isShow = true;
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                mTopBar.animate().translationYBy(mTopBar.getHeight()).setDuration(200).start();
+            }
         }
     }
 }
