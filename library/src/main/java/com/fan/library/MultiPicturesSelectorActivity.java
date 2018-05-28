@@ -23,14 +23,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.fan.library.info.Folder;
+import com.fan.library.info.ImageInfo;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import java.util.concurrent.Executors;
 
 public class MultiPicturesSelectorActivity extends Activity {
     private List<ImageInfo> mAllPictures = new ArrayList<>();
-    private List<String> mAllDirs = new ArrayList<>();
+    private List<Folder> mAllDirs = new ArrayList<>();
     private RecyclerView mList;
     private PicturesAdapter mPictureAdapter;
     private ExecutorService mService;
@@ -215,21 +216,16 @@ public class MultiPicturesSelectorActivity extends Activity {
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
                         mAllPictures.get(0).getPath(), preview, size, size));
             } else {
-                String parentPath = mAllDirs.get(position);
+                String parentPath = mAllDirs.get(position).getPath();
                 int index = parentPath.lastIndexOf(File.separator);
                 holder.tvName.setText(parentPath.substring(index + 1));
                 ImageView preview = holder.preview;
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) preview.getLayoutParams();
                 params.width = size;
                 params.height = size;
-                List<ImageInfo> result = new ArrayList<>();
-                setSelectPictures(parentPath, result);
-                sortPic(result);
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
-                        result.get(0).getPath(), preview, size, size));
-                int len[] = new int[1];
-                getFileNum(parentPath, len);
-                holder.tvNum.setText(len[0] + "张");
+                        mAllDirs.get(position).getImageInfos().get(0).getPath(), preview, size, size));
+                holder.tvNum.setText(mAllDirs.get(position).getImageInfos().size() + "张");
             }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -243,7 +239,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                         mSelectDirsPictures.addAll(mAllPictures);
                         mPictureAdapter.notifyDataSetChanged();
                     } else {
-                        String path = mAllDirs.get(position);
+                        String path = mAllDirs.get(position).getPath();
                         int index = path.lastIndexOf(File.separator);
                         String selectPath = path.substring(index + 1);
                         if (tv.getText().equals(selectPath)) {
@@ -251,8 +247,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                         }
                         tv.setText(selectPath);
                         mSelectDirsPictures.clear();
-                        setSelectPictures(path, mSelectDirsPictures);
-                        sortPic(mSelectDirsPictures);
+                        mSelectDirsPictures.addAll(mAllDirs.get(position).getImageInfos());
                         mPictureAdapter.notifyDataSetChanged();
                     }
                 }
@@ -278,137 +273,14 @@ public class MultiPicturesSelectorActivity extends Activity {
         }
     }
 
-    private int getPicDate(String path) {
-        long start = System.currentTimeMillis();
-
-        Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Images.Media.DATE_ADDED},
-                MediaStore.Images.Media.DATA + "=?", new String[]{path}, null);
-        if (cursor.moveToNext()) {
-            int result = cursor.getInt(0);
-            cursor.close();
-            Log.e("main", "end cursor   " + (System.currentTimeMillis() - start));
-            return result;
-        }
-        return 0;
-    }
-
-    private void sortPic(List<ImageInfo> infos) {
-        ImageInfo tempArray[] = new ImageInfo[infos.size()];
-        infos.toArray(tempArray);
-        Arrays.sort(tempArray, new Comparator<ImageInfo>() {
-            @Override
-            public int compare(ImageInfo o1, ImageInfo o2) {
-                return o2.getDate() - o1.getDate();
-            }
-        });
-        infos.clear();
-        infos.addAll(Arrays.asList(tempArray));
-    }
-
-    private void setSelectPictures(String path, List<ImageInfo> result) {
-        File files[] = new File(path).listFiles();
-        for (File file : files) {
-            if (file.isFile()) {
-                if (Utils.isPicture(file)) {
-                    String p = file.getAbsolutePath();
-                    long start = System.currentTimeMillis();
-                    for (ImageInfo info : mAllPictures) {
-                        if (p.equals(info.getPath())) {
-                            ImageInfo item = new ImageInfo(info.getDate(), p);
-                            result.add(item);
-                            //Log.e("main","end  traversal   "+(System.currentTimeMillis()-start));
-                            break;
-                        }
-                    }
-//                    ImageInfo item = new ImageInfo(getPicDate(p), p);
-//                    result.add(item);
-                }
-            } else {
-                setSelectPictures(file.getAbsolutePath(), result);
+    //过滤掉重复的folder
+    private Folder getFolder(String path) {
+        for (Folder folder : mAllDirs) {
+            if (folder.getPath().equals(path)) {
+                return folder;
             }
         }
-    }
-
-    private void getFirstPic(String path, List<ImageInfo> result) {
-
-        File files[] = new File(path).listFiles();
-        for (File file : files) {
-            if (file.isFile()) {
-                if (Utils.isPicture(file)) {
-                    String p = file.getAbsolutePath();
-//                    for (ImageInfo info : mAllPictures) {
-//                        if (p.equals(info.getPath())) {
-//                            temp.add(info);
-//                            break;
-//                        }
-//                    }
-                    ImageInfo item = new ImageInfo(getPicDate(p), p);
-                    result.add(item);
-                }
-            } else {
-                getFirstPic(path, result);
-            }
-        }
-        // 1 2  3  4  5  6  7  8  9  10
-        //  3  5 6 2  7
-//        int pos = temp.size();
-//        for (int i = 0; i < temp.size(); i++) {
-//            for (int j = 0; j < mAllPictures.size(); j++) {
-//                if (temp.get(i).equals(mAllPictures.get(j))) {
-//                    if (i < pos) {
-//                        pos = i;
-//                    }
-//                }
-//            }
-//        }
-    }
-
-
-//    private String traversalFile(String path) {
-//        File[] files = new File(path).listFiles();
-//        for (File file : files) {
-//            if (file.isFile()) {
-//                if (Utils.isPicture(file)) {
-//                    return file.getAbsolutePath();
-//                }
-//            } else {
-//                return traversalFile(file.getAbsolutePath());
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private String getFirstPic(String path) {
-//        File[] files = new File(path).listFiles();
-//        String result;
-//        for (File file : files) {
-//            if (file.isFile()) {
-//                if (Utils.isPicture(file)) {
-//                    return file.getAbsolutePath();
-//                }
-//            } else {
-//                result = traversalFile(file.getAbsolutePath());
-//                if (result != null) {
-//                    return result;
-//                }
-//            }
-//        }
-//        //遍历了所有的目录
-//        return null;
-//    }
-
-    private void getFileNum(String path, int[] result) {
-        File[] files = new File(path).listFiles();
-        for (File file : files) {
-            if (file.isFile()) {
-                if (Utils.isPicture(file)) {
-                    result[0]++;
-                }
-            } else {
-                getFileNum(file.getAbsolutePath(), result);
-            }
-        }
+        return null;
     }
 
     private class ReadTask implements Runnable {
@@ -419,21 +291,25 @@ public class MultiPicturesSelectorActivity extends Activity {
                                     MediaStore.Images.Media.DATE_ADDED},
                             null, null,
                             MediaStore.Images.Media.DATE_ADDED + " desc");
+            mAllDirs.add(new Folder("", null, null));
             while (cursor.moveToNext()) {
-                ImageInfo info = new ImageInfo(cursor.getInt(1), cursor.getString(0));
+                int date = cursor.getInt(1);
+                String path = cursor.getString(0);
+                ImageInfo info = new ImageInfo(date, path);
                 mAllPictures.add(info);
-            }
-            cursor.close();
-            mAllDirs.add(type_all);
-            for (ImageInfo info : mAllPictures) {
-                String path = info.getPath();
-                int end = path.lastIndexOf(File.separator);
-                String dir = path.substring(0, end);
-                if (!mAllDirs.contains(dir)) {
-                    mAllDirs.add(dir);
+
+                String dir = new File(path).getParentFile().getAbsolutePath();
+                Folder f = getFolder(dir);
+                if (f == null) {
+                    List<ImageInfo> folderImage = new ArrayList<>();
+                    folderImage.add(info);
+                    Folder folder = new Folder(dir, info, folderImage);
+                    mAllDirs.add(folder);
+                } else {
+                    f.getImageInfos().add(info);
                 }
             }
-
+            cursor.close();
             handler.sendEmptyMessage(1);
         }
     }

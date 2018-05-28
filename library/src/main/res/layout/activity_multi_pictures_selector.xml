@@ -22,7 +22,8 @@
             android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/ic_back"
             android:text="选择图片"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tv_complete"
