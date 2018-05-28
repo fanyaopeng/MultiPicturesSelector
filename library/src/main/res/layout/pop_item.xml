@@ -17,23 +17,23 @@
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="12dp"
-        android:layout_centerVertical="true"
         android:layout_toRightOf="@+id/img_dir_preview"
-        android:text="123"
+        android:text=""
         android:textSize="16sp" />
 
     <TextView
-        android:layout_alignBottom="@id/img_dir_preview"
         android:id="@+id/tv_num"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/img_dir_preview"
+        android:layout_marginBottom="5dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="12dp"
-        android:layout_marginBottom="5dp"
         android:layout_toRightOf="@+id/img_dir_preview"
-        android:text="456" />
+        android:text="" />
 
     <View
         android:layout_width="match_parent"

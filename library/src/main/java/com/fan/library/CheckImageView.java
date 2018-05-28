@@ -28,7 +28,7 @@ public class CheckImageView extends ImageView {
         }
     }
 
-    public boolean getChecked() {
+    public boolean isChecked() {
         return isChecked;
     }
 }

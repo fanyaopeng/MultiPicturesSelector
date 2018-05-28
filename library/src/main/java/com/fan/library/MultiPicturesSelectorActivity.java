@@ -18,7 +18,6 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +34,6 @@ import com.fan.library.info.ImageInfo;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,7 +62,7 @@ public class MultiPicturesSelectorActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multi_pictures_selector);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(Color.parseColor("#333333"));
+            getWindow().setStatusBarColor(getResources().getColor(R.color.status_bar));
         }
         initView();
         init();
@@ -357,16 +354,26 @@ public class MultiPicturesSelectorActivity extends Activity {
                     path, img, mItemSize, mItemSize));
             holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
             holder.ck.setChecked(mCheckPaths.contains(path));
+            holder.shadow.setVisibility(holder.ck.isChecked() ? View.VISIBLE : View.GONE);
+            if (holder.ck.isChecked()) {
+                holder.img.setScaleX(1.2f);
+                holder.img.setScaleY(1.2f);
+            } else {
+                holder.img.setScaleX(1.0f);
+                holder.img.setScaleY(1.0f);
+            }
             holder.ck.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     CheckImageView view = (CheckImageView) v;
-                    boolean isChecked = view.getChecked();
+                    boolean isChecked = view.isChecked();
                     view.setChecked(!isChecked);
-                    if (view.getChecked() && !mCheckPaths.contains(path)) {
+                    if (view.isChecked() && !mCheckPaths.contains(path)) {
+                        holder.shadow.setVisibility(View.VISIBLE);
                         mCheckPaths.add(path);
                         holder.img.animate().scaleX(1.2f).scaleY(1.2f).setDuration(200).start();
                     } else {
+                        holder.shadow.setVisibility(View.GONE);
                         mCheckPaths.remove(path);
                         holder.img.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
                     }
@@ -385,6 +392,7 @@ public class MultiPicturesSelectorActivity extends Activity {
             CheckImageView ck;
             FrameLayout root;
             TextView tvImageType;
+            FrameLayout shadow;
 
             public VH(View itemView) {
                 super(itemView);
@@ -392,6 +400,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 ck = itemView.findViewById(R.id.ck);
                 root = itemView.findViewById(R.id.root);
                 tvImageType = itemView.findViewById(R.id.tv_image_type);
+                shadow = itemView.findViewById(R.id.shadow);
             }
         }
     }
@@ -400,7 +409,7 @@ public class MultiPicturesSelectorActivity extends Activity {
         @Override
         public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
             super.onDraw(c, parent, state);
-            c.drawColor(Color.parseColor("#000000"));
+            c.drawColor(Color.BLACK);
         }
 
         @Override
