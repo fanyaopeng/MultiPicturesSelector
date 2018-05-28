@@ -56,6 +56,9 @@ public class MultiPicturesSelectorActivity extends Activity {
     private TextView mCurDir;
     private LinearLayout mShadow;
     private List<ImageInfo> mSelectDirsPictures = new ArrayList<>();
+    private TextView tvCurDir;
+    private int mMaxNum = 9;
+    private TextView tvComplete;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,7 +98,9 @@ public class MultiPicturesSelectorActivity extends Activity {
                 onBackPressed();
             }
         });
-        findViewById(R.id.tv_complete).setOnClickListener(new View.OnClickListener() {
+        tvComplete = findViewById(R.id.tv_complete);
+
+        tvComplete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
@@ -112,7 +117,8 @@ public class MultiPicturesSelectorActivity extends Activity {
                 startActivity(intent);
             }
         });
-        findViewById(R.id.tv_type).setOnClickListener(new View.OnClickListener() {
+        tvCurDir = findViewById(R.id.tv_type);
+        tvCurDir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SelectType();
@@ -224,6 +230,11 @@ public class MultiPicturesSelectorActivity extends Activity {
                         mAllDirs.get(position).getImageInfos().get(0).getPath(), preview, size, size));
                 holder.tvNum.setText(mAllDirs.get(position).getImageInfos().size() + "张");
             }
+            if (tvCurDir.getText().equals(type_all)) {
+                holder.imgIndicator.setVisibility(position == 0 ? View.VISIBLE : View.GONE);
+            } else {
+                holder.imgIndicator.setVisibility(mAllDirs.get(position).getPath().endsWith(tvCurDir.getText().toString()) ? View.VISIBLE : View.GONE);
+            }
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -247,6 +258,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                         mSelectDirsPictures.addAll(mAllDirs.get(position).getImageInfos());
                         mPictureAdapter.notifyDataSetChanged();
                     }
+                    notifyDataSetChanged();
                 }
             });
         }
@@ -260,12 +272,14 @@ public class MultiPicturesSelectorActivity extends Activity {
             ImageView preview;
             TextView tvName;
             TextView tvNum;
+            ImageView imgIndicator;
 
             public VH(View itemView) {
                 super(itemView);
                 preview = itemView.findViewById(R.id.img_dir_preview);
                 tvName = itemView.findViewById(R.id.tv_name);
                 tvNum = itemView.findViewById(R.id.tv_num);
+                imgIndicator = itemView.findViewById(R.id.img_indicator);
             }
         }
     }
@@ -355,27 +369,28 @@ public class MultiPicturesSelectorActivity extends Activity {
             holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
             holder.ck.setChecked(mCheckPaths.contains(path));
             holder.shadow.setVisibility(holder.ck.isChecked() ? View.VISIBLE : View.GONE);
-            if (holder.ck.isChecked()) {
-                holder.img.setScaleX(1.2f);
-                holder.img.setScaleY(1.2f);
-            } else {
-                holder.img.setScaleX(1.0f);
-                holder.img.setScaleY(1.0f);
-            }
-            holder.ck.setOnClickListener(new View.OnClickListener() {
+            holder.ckParent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    CheckImageView view = (CheckImageView) v;
+                    if (mCheckPaths.size() == mMaxNum) {
+                        Toast.makeText(MultiPicturesSelectorActivity.this, "你最多只能选择" + mMaxNum + "张图片", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    FrameLayout parent = (FrameLayout) v;
+                    CheckImageView view = (CheckImageView) parent.getChildAt(0);
                     boolean isChecked = view.isChecked();
                     view.setChecked(!isChecked);
                     if (view.isChecked() && !mCheckPaths.contains(path)) {
                         holder.shadow.setVisibility(View.VISIBLE);
                         mCheckPaths.add(path);
-                        holder.img.animate().scaleX(1.2f).scaleY(1.2f).setDuration(200).start();
                     } else {
                         holder.shadow.setVisibility(View.GONE);
                         mCheckPaths.remove(path);
-                        holder.img.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
+                    }
+                    if (mCheckPaths.size() != 0) {
+                        tvComplete.setText("完成(" + mCheckPaths.size() + "/" + mMaxNum + ")");
+                    } else {
+                        tvComplete.setText("完成");
                     }
                     tvPreviewNum.setText("(" + mCheckPaths.size() + ")");
                 }
@@ -393,6 +408,7 @@ public class MultiPicturesSelectorActivity extends Activity {
             FrameLayout root;
             TextView tvImageType;
             FrameLayout shadow;
+            FrameLayout ckParent;
 
             public VH(View itemView) {
                 super(itemView);
@@ -401,6 +417,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 root = itemView.findViewById(R.id.root);
                 tvImageType = itemView.findViewById(R.id.tv_image_type);
                 shadow = itemView.findViewById(R.id.shadow);
+                ckParent = itemView.findViewById(R.id.ck_parent);
             }
         }
     }

@@ -28,12 +28,15 @@
         <TextView
             android:id="@+id/tv_complete"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="27dp"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="12dp"
             android:layout_marginTop="12dp"
-            android:gravity="center_vertical"
+            android:background="@drawable/bg_green_solid"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="完成"
             android:textColor="@android:color/white" />
     </RelativeLayout>
