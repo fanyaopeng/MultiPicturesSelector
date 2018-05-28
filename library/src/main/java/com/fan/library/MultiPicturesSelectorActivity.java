@@ -18,6 +18,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -221,9 +222,11 @@ public class MultiPicturesSelectorActivity extends Activity {
                 RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) preview.getLayoutParams();
                 params.width = size;
                 params.height = size;
-                String prePath = getFirstPic(parentPath);
+                List<ImageInfo> result = new ArrayList<>();
+                setSelectPictures(parentPath, result);
+                sortPic(result);
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
-                        prePath, preview, size, size));
+                        result.get(0).getPath(), preview, size, size));
                 int len[] = new int[1];
                 getFileNum(parentPath, len);
                 holder.tvNum.setText(len[0] + "张");
@@ -248,7 +251,8 @@ public class MultiPicturesSelectorActivity extends Activity {
                         }
                         tv.setText(selectPath);
                         mSelectDirsPictures.clear();
-                        setSelectPictures(path);
+                        setSelectPictures(path, mSelectDirsPictures);
+                        sortPic(mSelectDirsPictures);
                         mPictureAdapter.notifyDataSetChanged();
                     }
                 }
@@ -274,52 +278,76 @@ public class MultiPicturesSelectorActivity extends Activity {
         }
     }
 
-    private void setSelectPictures(String path) {
-        File files[] = new File(path).listFiles();
-        for (File file : files) {
-            if (file.isFile()) {
-                if (Utils.isPicture(file)) {
-                    String p = file.getAbsolutePath();
-                    for (ImageInfo info : mAllPictures) {
-                        if (p.equals(info.getPath())) {
-                            ImageInfo item = new ImageInfo(info.getDate(), p);
-                            mSelectDirsPictures.add(item);
-                        }
-                    }
-                }
-            } else {
-                setSelectPictures(file.getAbsolutePath());
-            }
+    private int getPicDate(String path) {
+        long start = System.currentTimeMillis();
+
+        Cursor cursor = MediaStore.Images.Media.query(getContentResolver(), MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Images.Media.DATE_ADDED},
+                MediaStore.Images.Media.DATA + "=?", new String[]{path}, null);
+        if (cursor.moveToNext()) {
+            int result = cursor.getInt(0);
+            cursor.close();
+            Log.e("main", "end cursor   " + (System.currentTimeMillis() - start));
+            return result;
         }
-        ImageInfo tempArray[] = new ImageInfo[mSelectDirsPictures.size()];
-        mSelectDirsPictures.toArray(tempArray);
+        return 0;
+    }
+
+    private void sortPic(List<ImageInfo> infos) {
+        ImageInfo tempArray[] = new ImageInfo[infos.size()];
+        infos.toArray(tempArray);
         Arrays.sort(tempArray, new Comparator<ImageInfo>() {
             @Override
             public int compare(ImageInfo o1, ImageInfo o2) {
                 return o2.getDate() - o1.getDate();
             }
         });
-        mSelectDirsPictures.clear();
-        mSelectDirsPictures.addAll(Arrays.asList(tempArray));
+        infos.clear();
+        infos.addAll(Arrays.asList(tempArray));
     }
 
-    private String getFirstPic(String path) {
-
+    private void setSelectPictures(String path, List<ImageInfo> result) {
         File files[] = new File(path).listFiles();
-        List<ImageInfo> temp = new ArrayList<>();
         for (File file : files) {
             if (file.isFile()) {
                 if (Utils.isPicture(file)) {
                     String p = file.getAbsolutePath();
+                    long start = System.currentTimeMillis();
                     for (ImageInfo info : mAllPictures) {
                         if (p.equals(info.getPath())) {
-                            temp.add(info);
+                            ImageInfo item = new ImageInfo(info.getDate(), p);
+                            result.add(item);
+                            //Log.e("main","end  traversal   "+(System.currentTimeMillis()-start));
                             break;
                         }
                     }
+//                    ImageInfo item = new ImageInfo(getPicDate(p), p);
+//                    result.add(item);
                 }
             } else {
-                setSelectPictures(file.getAbsolutePath());
+                setSelectPictures(file.getAbsolutePath(), result);
+            }
+        }
+    }
+
+    private void getFirstPic(String path, List<ImageInfo> result) {
+
+        File files[] = new File(path).listFiles();
+        for (File file : files) {
+            if (file.isFile()) {
+                if (Utils.isPicture(file)) {
+                    String p = file.getAbsolutePath();
+//                    for (ImageInfo info : mAllPictures) {
+//                        if (p.equals(info.getPath())) {
+//                            temp.add(info);
+//                            break;
+//                        }
+//                    }
+                    ImageInfo item = new ImageInfo(getPicDate(p), p);
+                    result.add(item);
+                }
+            } else {
+                getFirstPic(path, result);
             }
         }
         // 1 2  3  4  5  6  7  8  9  10
@@ -334,15 +362,6 @@ public class MultiPicturesSelectorActivity extends Activity {
 //                }
 //            }
 //        }
-        ImageInfo tempArray[] = new ImageInfo[temp.size()];
-        temp.toArray(tempArray);
-        Arrays.sort(tempArray, new Comparator<ImageInfo>() {
-            @Override
-            public int compare(ImageInfo o1, ImageInfo o2) {
-                return o2.getDate() - o1.getDate();
-            }
-        });
-        return tempArray[0].getPath();
     }
 
 
@@ -444,6 +463,7 @@ public class MultiPicturesSelectorActivity extends Activity {
             return false;
         }
     });
+
     private class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.VH> {
         @Override
         public VH onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -461,10 +481,13 @@ public class MultiPicturesSelectorActivity extends Activity {
                     path, img, mItemSize, mItemSize));
             holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
             holder.ck.setChecked(mCheckPaths.contains(path));
-            holder.ck.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            holder.ck.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked && !mCheckPaths.contains(path)) {
+                public void onClick(View v) {
+                    CheckImageView view = (CheckImageView) v;
+                    boolean isChecked = view.getChecked();
+                    view.setChecked(!isChecked);
+                    if (view.getChecked() && !mCheckPaths.contains(path)) {
                         mCheckPaths.add(path);
                         holder.img.animate().scaleX(1.2f).scaleY(1.2f).setDuration(200).start();
                     } else {
@@ -483,7 +506,7 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         public class VH extends RecyclerView.ViewHolder {
             ImageView img;
-            CheckBox ck;
+            CheckImageView ck;
             FrameLayout root;
             TextView tvImageType;
 
