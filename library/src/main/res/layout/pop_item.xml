@@ -51,5 +51,5 @@
         android:layout_marginLeft="12dp"
         android:layout_marginRight="12dp"
         android:layout_marginTop="5dp"
-        android:background="#5f5f5f" />
+        android:background="#dfdfdf" />
 </RelativeLayout>
