@@ -2,6 +2,7 @@ package com.fan.library.activity;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapRegionDecoder;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,10 +17,12 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.fan.library.R;
+import com.fan.library.utils.LongScaleImageView;
 import com.fan.library.utils.Utils;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,10 +61,17 @@ public class PreviewActivity extends Activity {
         imageViews.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
-                ImageView imageView = new ScaleImageView(PreviewActivity.this);
-                Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
-                imageView.setImageBitmap(result);
-                imageViews.add(imageView);
+                if (Utils.isLongImage(p, vp.getWidth(), vp.getHeight())) {
+                    ImageView imageView = new LongScaleImageView(PreviewActivity.this);
+                    Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
+                    imageView.setImageBitmap(result);
+                    imageViews.add(imageView);
+                } else {
+                    ImageView imageView = new ScaleImageView(PreviewActivity.this);
+                    Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
+                    imageView.setImageBitmap(result);
+                    imageViews.add(imageView);
+                }
             } else {
                 GifImageView gifImageView = new GifImageView(this);
                 gifImageView.setResource(p);
@@ -72,7 +82,6 @@ public class PreviewActivity extends Activity {
             vp.setAdapter(new ImageAdapter());
         initTop();
     }
-
 
     private List<View> imageViews = new ArrayList<>();
 

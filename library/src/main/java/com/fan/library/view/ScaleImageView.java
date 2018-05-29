@@ -1,8 +1,13 @@
 package com.fan.library.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
@@ -17,13 +22,16 @@ import android.view.ScaleGestureDetector;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 public class ScaleImageView extends ImageView {
     private Matrix matrix;
     private GestureDetector mGestureDetector;
     private float mMaxScale = 4;
-    private float mCurScale = 1;
-    private float mCenterScale = 2;
-    private float mInitScale = 1.0f;
+    protected float mCurScale = 1;
+    protected float mCenterScale = 2;
+    protected float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
 
     public ScaleImageView(Context context) {
@@ -89,12 +97,8 @@ public class ScaleImageView extends ImageView {
         }
     }
 
-    private float mCenter[] = new float[2];
-
     private void resetScale() {
-        //matrix.reset();
-        //matrix.postTranslate(mCenter[0], mCenter[1]);
-        matrix.setScale(mInitScale, mInitScale);
+        matrix.postScale(mInitScale / mCurScale, mInitScale / mCurScale, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
         mCurScale = mInitScale;
     }
@@ -103,16 +107,59 @@ public class ScaleImageView extends ImageView {
 
     private void checkBorder() {
         if (!isNeedCheckBorder) return;
-        RectF rectF = new RectF();
-        matrix.mapRect(rectF);
+        RectF rectF = getMatrixRectF();
 
-        Log.e("main", rectF.toString());
-//        if (rectF.left < 0) {
-//            if (rectF.top < 0) {
-//                matrix.postTranslate(-rectF.left, -rectF.top);
-//            }
+//        Log.e("main", rectF.toString());
+//        Log.e("main", "width " + rectF.width());
+        float dx = 0;
+        float dy = 0;
+        float width = getWidth();
+        float height = getHeight();
+        if (rectF.width() >= width) {
+            if (rectF.left > 0) {
+                dx = -rectF.left;
+            }
+            if (rectF.right < width) {
+                dx = width - rectF.right;
+            }
+        }
+        if (rectF.height() >= height) {
+            if (rectF.top > 0) {
+                dy = -rectF.top;
+            }
+            if (rectF.bottom < height) {
+                dy = height - rectF.bottom;
+            }
+        }
+
+//        if (rectF.width() < width) {
+//            dx = width / 2f - rectF.right + rectF.width() / 2f;
 //        }
+        if (rectF.height() < height) {
+            dy = height / 2f + rectF.height() / 2f - rectF.bottom;
+        }
+
+        matrix.postTranslate(dx, dy);
+        setImageMatrix(matrix);
         isNeedCheckBorder = false;
+    }
+
+    private RectF getMatrixRectF() {
+        RectF rectF = new RectF();
+        Drawable d = getDrawable();
+        rectF.set(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+        matrix.mapRect(rectF);
+        return rectF;
+    }
+
+    protected void handleScroll(float distanceX, float distanceY) {
+        isNeedCheckBorder = true;
+
+        setImageMatrix(matrix);
+        if (mCurScale == mInitScale) {
+            distanceY = 0;
+        }
+        matrix.postTranslate(-distanceX, -distanceY);
     }
 
     private class TapCallback extends GestureDetector.SimpleOnGestureListener {
@@ -120,6 +167,7 @@ public class ScaleImageView extends ImageView {
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             isDoubleTap = true;
+            isNeedCheckBorder = true;
             if (mCurScale < mCenterScale) {
                 float factor = mCenterScale / mCurScale;
                 matrix.postScale(factor, factor, getWidth() / 2, getHeight() / 2);
@@ -140,12 +188,7 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            isNeedCheckBorder = true;
-            if (mCurScale == mInitScale) {
-                distanceY = 0;
-            }
-            matrix.postTranslate(-distanceX, -distanceY);
-            setImageMatrix(matrix);
+            handleScroll(distanceX, distanceY);
             return true;
         }
     }
@@ -163,7 +206,7 @@ public class ScaleImageView extends ImageView {
             return false;
         }
     });
-    private boolean isInit;
+    protected boolean isInitAttach;
 
     @Override
     protected void onAttachedToWindow() {
@@ -172,29 +215,30 @@ public class ScaleImageView extends ImageView {
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onGlobalLayout() {
-                if (isInit) return;
-                Drawable d = getDrawable();
-                if (d == null) return;
-                int width = getWidth();
-                int height = getHeight();
-                int dw = d.getIntrinsicWidth();
-                int dh = d.getIntrinsicHeight();
-                float scaleW = (float) width / (float) dw;
-                float scaleH = (float) height / (float) dh;
-                mInitScale = Math.min(scaleH, scaleW);
-                mCurScale = mInitScale;
-                mMaxScale = mInitScale * 4;
-                mCenterScale = mInitScale * 2;
-                matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-                mCenter[0] = (width - dw) / 2;
-                mCenter[1] = (height - dh) / 2;
-                matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
-                setImageMatrix(matrix);
-                isInit = true;
+                if (isInitAttach) return;
+                initAttach();
                 getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         };
         getViewTreeObserver().addOnGlobalLayoutListener(listener);
+    }
 
+    protected void initAttach() {
+        Drawable d = getDrawable();
+        if (d == null) return;
+        int width = getWidth();
+        int height = getHeight();
+        int dw = d.getIntrinsicWidth();
+        int dh = d.getIntrinsicHeight();
+        float scaleW = (float) width / (float) dw;
+        float scaleH = (float) height / (float) dh;
+        mInitScale = Math.min(scaleH, scaleW);
+        mCurScale = mInitScale;
+        mMaxScale = mInitScale * 4;
+        mCenterScale = mInitScale * 2;
+        matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
+        matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
+        setImageMatrix(matrix);
+        isInitAttach = true;
     }
 }

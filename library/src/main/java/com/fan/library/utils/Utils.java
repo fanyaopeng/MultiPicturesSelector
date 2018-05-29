@@ -22,15 +22,17 @@ public class Utils {
         return BitmapFactory.decodeFile(path, options);
     }
 
-    public static boolean isPicture(File file) {
-        if (file.getName().endsWith("jpg") || file.getName().endsWith("png") || file.getName().endsWith("gif")) {
-            return true;
-        }
-        return false;
-    }
-
     public static boolean isGif(String path) {
 
         return path.endsWith("gif");
     }
+
+    public static boolean isLongImage(String path, int width, int height) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(path, options);
+        //return options.outWidth > width || options.outHeight > height;
+        return false;
+    }
+
 }
