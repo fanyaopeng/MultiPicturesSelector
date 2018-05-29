@@ -2,11 +2,15 @@ package com.fan.library.view;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -19,7 +23,7 @@ public class ScaleImageView extends ImageView {
     private float mMaxScale = 4;
     private float mCurScale = 1;
     private float mCenterScale = 2;
-    private float mInitScale;
+    private float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
 
     public ScaleImageView(Context context) {
@@ -41,8 +45,10 @@ public class ScaleImageView extends ImageView {
         mGestureDetector.onTouchEvent(event);
         mScaleGestureDetector.onTouchEvent(event);
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (mCurScale < 1.0f)
+            if (mCurScale < mInitScale) {
                 resetScale();
+            }
+            checkBorder();
         }
         return true;
     }
@@ -63,9 +69,11 @@ public class ScaleImageView extends ImageView {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float factor = detector.getScaleFactor();
+            if (mCurScale * factor < 0.5f) {
+                return true;
+            }
             mCurScale = mCurScale * factor;
-            if (mCurScale < 0.5f) return true;
-            matrix.setScale(mCurScale, mCurScale, detector.getFocusX(), detector.getFocusY());
+            matrix.postScale(factor, factor, detector.getFocusX(), detector.getFocusY());
             setImageMatrix(matrix);
             return true;
         }
@@ -74,47 +82,38 @@ public class ScaleImageView extends ImageView {
         public void onScaleEnd(ScaleGestureDetector detector) {
             super.onScaleEnd(detector);
             if (mCurScale > mMaxScale) {
-                mCurScale = mMaxScale;
-                matrix.setScale(mCurScale, mCurScale, getWidth() / 2, getHeight() / 2);
+                matrix.postScale(mMaxScale / mCurScale, mMaxScale / mCurScale, getWidth() / 2, getHeight() / 2);
                 setImageMatrix(matrix);
+                mCurScale = mMaxScale;
             }
         }
     }
 
+    private float mCenter[] = new float[2];
+
     private void resetScale() {
-        mCurScale = 1.0f;
-        matrix.setScale(mCurScale, mCurScale, getWidth() / 2, getHeight() / 2);
+        //matrix.reset();
+        //matrix.postTranslate(mCenter[0], mCenter[1]);
+        matrix.setScale(mInitScale, mInitScale);
         setImageMatrix(matrix);
+        mCurScale = mInitScale;
     }
 
-    private boolean isInit;
+    private boolean isNeedCheckBorder;
 
-//    @Override
-//    protected void onAttachedToWindow() {
-//        super.onAttachedToWindow();
-//        getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-//            @Override
-//            public void onGlobalLayout() {
-//                if (isInit) return;
-//                Drawable d = getDrawable();
-//                if (d == null) return;
-//                int width = getWidth();
-//                int height = getHeight();
-//                int dw = d.getIntrinsicWidth();
-//                int dh = d.getIntrinsicHeight();
-//                float scaleW = (float) width / (float) dw;
-//                float scaleH = (float) height / (float) dh;
-//                mInitScale = Math.min(scaleH, scaleW);
-//                mCurScale = mInitScale;
-//                mMaxScale = mInitScale * 4;
-//                mCenterScale = mInitScale * 2;
-//                matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-//                matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
-//                setImageMatrix(matrix);
-//                isInit = true;
+    private void checkBorder() {
+        if (!isNeedCheckBorder) return;
+        RectF rectF = new RectF();
+        matrix.mapRect(rectF);
+
+        Log.e("main", rectF.toString());
+//        if (rectF.left < 0) {
+//            if (rectF.top < 0) {
+//                matrix.postTranslate(-rectF.left, -rectF.top);
 //            }
-//        });
-//    }
+//        }
+        isNeedCheckBorder = false;
+    }
 
     private class TapCallback extends GestureDetector.SimpleOnGestureListener {
 
@@ -122,9 +121,10 @@ public class ScaleImageView extends ImageView {
         public boolean onDoubleTap(MotionEvent e) {
             isDoubleTap = true;
             if (mCurScale < mCenterScale) {
-                mCurScale = mCenterScale;
-                matrix.postScale(mCurScale, mCurScale, getWidth() / 2, getHeight() / 2);
+                float factor = mCenterScale / mCurScale;
+                matrix.postScale(factor, factor, getWidth() / 2, getHeight() / 2);
                 setImageMatrix(matrix);
+                mCurScale = mCenterScale;
             } else {
                 resetScale();
             }
@@ -140,7 +140,13 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            return super.onScroll(e1, e2, distanceX, distanceY);
+            isNeedCheckBorder = true;
+            if (mCurScale == mInitScale) {
+                distanceY = 0;
+            }
+            matrix.postTranslate(-distanceX, -distanceY);
+            setImageMatrix(matrix);
+            return true;
         }
     }
 
@@ -157,4 +163,38 @@ public class ScaleImageView extends ImageView {
             return false;
         }
     });
+    private boolean isInit;
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onGlobalLayout() {
+                if (isInit) return;
+                Drawable d = getDrawable();
+                if (d == null) return;
+                int width = getWidth();
+                int height = getHeight();
+                int dw = d.getIntrinsicWidth();
+                int dh = d.getIntrinsicHeight();
+                float scaleW = (float) width / (float) dw;
+                float scaleH = (float) height / (float) dh;
+                mInitScale = Math.min(scaleH, scaleW);
+                mCurScale = mInitScale;
+                mMaxScale = mInitScale * 4;
+                mCenterScale = mInitScale * 2;
+                matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
+                mCenter[0] = (width - dw) / 2;
+                mCenter[1] = (height - dh) / 2;
+                matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
+                setImageMatrix(matrix);
+                isInit = true;
+                getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        };
+        getViewTreeObserver().addOnGlobalLayoutListener(listener);
+
+    }
 }

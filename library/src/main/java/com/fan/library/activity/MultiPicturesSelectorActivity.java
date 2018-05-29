@@ -1,9 +1,11 @@
 package com.fan.library.activity;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -14,10 +16,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -352,52 +357,89 @@ public class MultiPicturesSelectorActivity extends Activity {
         }
     });
 
-    private class PicturesAdapter extends RecyclerView.Adapter<PicturesAdapter.VH> {
+    private class PicturesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private int TYPE_CAMERA = 5000;
+
         @Override
-        public VH onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new VH(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false));
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == TYPE_CAMERA) {
+                return new CameraVH(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_camera, parent, false));
+            }
+            return new PictureVH(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(final VH holder, final int position) {
-            ImageView img = holder.img;
-            RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.root.getLayoutParams();
-            params.width = mItemSize;
-            params.height = mItemSize;
-            final String path = mSelectDirsPictures.get(position).getPath();
-            mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
-                    path, img, mItemSize, mItemSize));
-            holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
-            holder.ck.setChecked(mCheckPaths.contains(path));
-            holder.shadow.setVisibility(holder.ck.isChecked() ? View.VISIBLE : View.GONE);
-            holder.ckParent.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    FrameLayout parent = (FrameLayout) v;
-                    CheckImageView view = (CheckImageView) parent.getChildAt(0);
-                    boolean isChecked = view.isChecked();
-                    view.setChecked(!isChecked);
-                    if (view.isChecked() && !mCheckPaths.contains(path)) {
+        public int getItemViewType(int position) {
+            if (position == 0) {
+                return TYPE_CAMERA;
+            }
+            return super.getItemViewType(position);
+        }
 
-                        if (mCheckPaths.size() == mMaxNum) {
-                            Toast.makeText(MultiPicturesSelectorActivity.this, "你最多只能选择" + mMaxNum + "张图片", Toast.LENGTH_SHORT).show();
-                            view.setChecked(false);
-                            return;
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder vh, final int position) {
+
+            if (vh.getItemViewType() == TYPE_CAMERA) {
+                CameraVH holder = (CameraVH) vh;
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.cameraRoot.getLayoutParams();
+                params.width = mItemSize;
+                params.height = mItemSize;
+                holder.camera.setImageResource(R.mipmap.ic_camera);
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            if (MultiPicturesSelectorActivity.this.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                                startCamera();
+                            } else {
+                                requestPermissions(new String[]{Manifest.permission.CAMERA}, 0);
+                            }
+                        } else {
+                            startCamera();
                         }
-                        holder.shadow.setVisibility(View.VISIBLE);
-                        mCheckPaths.add(path);
-                    } else {
-                        holder.shadow.setVisibility(View.GONE);
-                        mCheckPaths.remove(path);
                     }
-                    if (mCheckPaths.size() != 0) {
-                        tvComplete.setText("完成(" + mCheckPaths.size() + "/" + mMaxNum + ")");
-                    } else {
-                        tvComplete.setText("完成");
+                });
+            } else {
+                final PictureVH holder = (PictureVH) vh;
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.root.getLayoutParams();
+                params.width = mItemSize;
+                params.height = mItemSize;
+                ImageView img = holder.img;
+                final String path = mSelectDirsPictures.get(position).getPath();
+                mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
+                        path, img, mItemSize, mItemSize));
+                holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
+                holder.ck.setChecked(mCheckPaths.contains(path));
+                holder.shadow.setVisibility(holder.ck.isChecked() ? View.VISIBLE : View.GONE);
+                holder.ckParent.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        FrameLayout parent = (FrameLayout) v;
+                        CheckImageView view = (CheckImageView) parent.getChildAt(0);
+                        boolean isChecked = view.isChecked();
+                        view.setChecked(!isChecked);
+                        if (view.isChecked() && !mCheckPaths.contains(path)) {
+
+                            if (mCheckPaths.size() == mMaxNum) {
+                                Toast.makeText(MultiPicturesSelectorActivity.this, "你最多只能选择" + mMaxNum + "张图片", Toast.LENGTH_SHORT).show();
+                                view.setChecked(false);
+                                return;
+                            }
+                            holder.shadow.setVisibility(View.VISIBLE);
+                            mCheckPaths.add(path);
+                        } else {
+                            holder.shadow.setVisibility(View.GONE);
+                            mCheckPaths.remove(path);
+                        }
+                        if (mCheckPaths.size() != 0) {
+                            tvComplete.setText("完成(" + mCheckPaths.size() + "/" + mMaxNum + ")");
+                        } else {
+                            tvComplete.setText("完成");
+                        }
+                        tvPreviewNum.setText("(" + mCheckPaths.size() + ")");
                     }
-                    tvPreviewNum.setText("(" + mCheckPaths.size() + ")");
-                }
-            });
+                });
+            }
         }
 
         @Override
@@ -405,7 +447,18 @@ public class MultiPicturesSelectorActivity extends Activity {
             return mSelectDirsPictures.size();
         }
 
-        public class VH extends RecyclerView.ViewHolder {
+        public class CameraVH extends RecyclerView.ViewHolder {
+            FrameLayout cameraRoot;
+            ImageView camera;
+
+            public CameraVH(View itemView) {
+                super(itemView);
+                cameraRoot = itemView.findViewById(R.id.root);
+                camera = itemView.findViewById(R.id.ic_camera);
+            }
+        }
+
+        public class PictureVH extends RecyclerView.ViewHolder {
             ImageView img;
             CheckImageView ck;
             FrameLayout root;
@@ -413,14 +466,39 @@ public class MultiPicturesSelectorActivity extends Activity {
             FrameLayout shadow;
             FrameLayout ckParent;
 
-            public VH(View itemView) {
+            public PictureVH(View itemView) {
                 super(itemView);
+
                 img = itemView.findViewById(R.id.image);
                 ck = itemView.findViewById(R.id.ck);
                 root = itemView.findViewById(R.id.root);
                 tvImageType = itemView.findViewById(R.id.tv_image_type);
                 shadow = itemView.findViewById(R.id.shadow);
                 ckParent = itemView.findViewById(R.id.ck_parent);
+            }
+        }
+    }
+
+    private void startCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, getExternalCacheDir() + File.separator + System.currentTimeMillis() + ".png");
+        startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
             }
         }
     }
