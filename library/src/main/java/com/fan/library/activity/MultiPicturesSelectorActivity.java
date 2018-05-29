@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -479,17 +481,28 @@ public class MultiPicturesSelectorActivity extends Activity {
         }
     }
 
+    private String cameraPath;
+
     private void startCamera() {
+        cameraPath = getExternalCacheDir() + File.separator + System.currentTimeMillis() + ".png";
+        File target = new File(cameraPath);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, getExternalCacheDir() + File.separator + System.currentTimeMillis() + ".png");
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(MultiPicturesSelectorActivity.this,
+                    getPackageName(), target));
+        } else {
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(target));
+        }
         startActivityForResult(intent, 1);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0 && resultCode == RESULT_OK) {
-
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            mCheckPaths.add(cameraPath);
+            tvComplete.performClick();
         }
     }
 
