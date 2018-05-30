@@ -225,6 +225,7 @@ public class ScaleImageView extends ImageView {
         getViewTreeObserver().addOnGlobalLayoutListener(listener);
     }
 
+
     private void initAttach() {
         Drawable d = getDrawable();
         if (d == null) return;
@@ -232,6 +233,7 @@ public class ScaleImageView extends ImageView {
         int height = getHeight();
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
+        Log.e("main", "width  " + width);
         if (height > dh && width > dw) {
             float scaleW = (float) width / (float) dw;
             float scaleH = (float) height / (float) dh;

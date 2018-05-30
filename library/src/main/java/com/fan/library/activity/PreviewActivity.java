@@ -58,15 +58,16 @@ public class PreviewActivity extends Activity {
         for (String p : paths) {
             if (!Utils.isGif(p)) {
                 ScaleImageView imageView;
-                Bitmap result;
+
                 if (Utils.isLongImage(PreviewActivity.this, p)) {
                     imageView = new LargeScaleImageView(this);
-                    result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
+                    LargeScaleImageView img = (LargeScaleImageView) imageView;
+                    img.setImagePath(p);
                 } else {
                     imageView = new ScaleImageView(this);
-                    result = Utils.compress(p, vp.getWidth(), vp.getHeight());
+                    Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
+                    imageView.setImageBitmap(result);
                 }
-                imageView.setImageBitmap(result);
                 imageViews.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);

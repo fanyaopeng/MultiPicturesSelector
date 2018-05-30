@@ -33,44 +33,34 @@ public class LargeScaleImageView extends ScaleImageView {
         super(context, attrs);
     }
 
-    private boolean isInitAttach;
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-            @Override
-            public void onGlobalLayout() {
-                if (isInitAttach) return;
-                initDecoder();
-                isInitAttach = true;
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        };
-        getViewTreeObserver().addOnGlobalLayoutListener(listener);
+    public void setImagePath(String path) {
+        initDecoder(path);
     }
 
-    private void initDecoder() {
-        BitmapDrawable drawable = (BitmapDrawable) getDrawable();
-        Bitmap bitmap = drawable.getBitmap();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        byte[] b = baos.toByteArray();
+
+    private void initDecoder(String path) {
         try {
-            mDecoder = BitmapRegionDecoder.newInstance(b, 0, b.length, true);
+            mDecoder = BitmapRegionDecoder.newInstance(path, true);
         } catch (IOException e) {
             e.printStackTrace();
         }
         mOptions = new BitmapFactory.Options();
         mOptions.inPreferredConfig = Bitmap.Config.RGB_565;
-        mImageRect = new Rect(0, 0, getWidth(), getHeight());
+
 
         mOptions.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(b, 0, b.length, mOptions);
+        BitmapFactory.decodeFile(path, mOptions);
         mImageHeight = mOptions.outHeight;
         mImageWidth = mOptions.outWidth;
         mOptions.inJustDecodeBounds = false;
+
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        if (mImageRect == null)
+            mImageRect = new Rect(0, 0, getMeasuredWidth(), getMeasuredHeight());
     }
 
     @Override
@@ -78,6 +68,7 @@ public class LargeScaleImageView extends ScaleImageView {
         //super.onDraw(canvas);
         Bitmap bitmap = decodeLongImage(mImageRect);
         canvas.drawBitmap(bitmap, 0, 0, null);
+        if (getDrawable() == null) setImageBitmap(bitmap);
     }
 
     @Override
@@ -86,6 +77,11 @@ public class LargeScaleImageView extends ScaleImageView {
         isNeedCheckBorder = true;
         if (getWidth() >= mImageWidth) {
             //竖图
+        }
+        if (mImageRect.left + dx <= 0) {
+            mImageRect.offsetTo(0, mImageRect.top);
+            super.onScroll(dx, dy);
+            return;
         }
         mImageRect.offset((int) dx, (int) dy);
         invalidate();
@@ -100,10 +96,10 @@ public class LargeScaleImageView extends ScaleImageView {
         int dx = 0;
         int dy = 0;
 
-        if (mImageRect.left > 0) {
+        if (mImageRect.left < 0) {
             dx = -mImageRect.left;
         }
-        if (mImageRect.top > 0) {
+        if (mImageRect.top < 0) {
             dy = -mImageRect.top;
         }
         mImageRect.offset(dx, dy);
@@ -113,7 +109,7 @@ public class LargeScaleImageView extends ScaleImageView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            checkBorder();
+            //checkBorder();
         }
         return super.onTouchEvent(event);
     }
