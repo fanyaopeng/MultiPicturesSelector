@@ -1,5 +1,6 @@
-package com.fan.library.utils;
+package com.fan.library.view;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.fan.library.view.ScaleImageView;
 
@@ -44,19 +46,38 @@ public class LongScaleImageView extends ScaleImageView {
 
     @Override
     protected void handleScroll(float distanceX, float distanceY) {
-        super.handleScroll(distanceX, distanceY);
+        // super.handleScroll(distanceX, distanceY);
         int top = (int) (mLastBottom - getHeight() + distanceY);
         mCurRect.set(0, top, getRight(), top + getHeight());
-        setImageBitmap(decodeLongImage(mCurRect));
+        //setImageBitmap(decodeLongImage(mCurRect));
         mLastBottom = top + getHeight();
+        invalidate();
     }
 
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-//        Bitmap bitmap = decodeLongImage(mCurRect);
-//        canvas.drawBitmap(bitmap, 0, 0, null);
-//    }
+    @Override
+    protected void onFiling(final float velocityX, final float velocityY) {
+        super.onFiling(velocityX, velocityY);
+
+//        ValueAnimator animator = new ValueAnimator();
+//        animator.setFloatValues(0, 1);
+//        animator.setDuration(1000);
+//        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                float fraction = animation.getAnimatedFraction();
+//                matrix.postTranslate(velocityX * fraction, velocityY * fraction);
+//                setImageMatrix(matrix);
+//            }
+//        });
+//        animator.start();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        //super.onDraw(canvas);
+        Bitmap bitmap = decodeLongImage(mCurRect);
+        canvas.drawBitmap(bitmap, 0, 0, null);
+    }
 
     private BitmapRegionDecoder mDecoder;
 
@@ -72,7 +93,6 @@ public class LongScaleImageView extends ScaleImageView {
         }
         mCurRect = new Rect(0, 0, getWidth(), getHeight());
         mLastBottom = getHeight();
-        setImageBitmap(decodeLongImage(mCurRect));
     }
 
     private Bitmap decodeLongImage(Rect rect) {

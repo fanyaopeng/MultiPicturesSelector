@@ -1,5 +1,6 @@
 package com.fan.library.view;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,14 +20,16 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.VelocityTracker;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ScaleImageView extends ImageView {
-    private Matrix matrix;
+    protected Matrix matrix;
     private GestureDetector mGestureDetector;
     private float mMaxScale = 4;
     protected float mCurScale = 1;
@@ -97,6 +100,10 @@ public class ScaleImageView extends ImageView {
         }
     }
 
+    protected void onFiling( float velocityX,  float velocityY) {
+
+    }
+
     private void resetScale() {
         matrix.postScale(mInitScale / mCurScale, mInitScale / mCurScale, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
@@ -154,12 +161,11 @@ public class ScaleImageView extends ImageView {
 
     protected void handleScroll(float distanceX, float distanceY) {
         isNeedCheckBorder = true;
-
-        setImageMatrix(matrix);
         if (mCurScale == mInitScale) {
             distanceY = 0;
         }
         matrix.postTranslate(-distanceX, -distanceY);
+        setImageMatrix(matrix);
     }
 
     private class TapCallback extends GestureDetector.SimpleOnGestureListener {
@@ -190,6 +196,12 @@ public class ScaleImageView extends ImageView {
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             handleScroll(distanceX, distanceY);
             return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            onFiling(velocityX, velocityY);
+            return super.onFling(e1, e2, velocityX, velocityY);
         }
     }
 

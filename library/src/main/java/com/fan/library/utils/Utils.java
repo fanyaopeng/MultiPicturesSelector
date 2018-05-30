@@ -27,12 +27,13 @@ public class Utils {
         return path.endsWith("gif");
     }
 
-    public static boolean isLongImage(String path, int width, int height) {
+    public static boolean isLongImage(Context context, String path) {
+        int width = context.getResources().getDisplayMetrics().widthPixels;
+        int height = context.getResources().getDisplayMetrics().heightPixels;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
-        //return options.outWidth > width || options.outHeight > height;
-        return false;
+        return options.outWidth > width || options.outHeight > height;
     }
 
 }
