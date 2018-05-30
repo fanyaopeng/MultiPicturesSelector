@@ -81,7 +81,10 @@ public class LargeScaleImageView extends ScaleImageView {
 
     @Override
     protected void onScroll(float dx, float dy) {
-        super.onScroll(dx, dy);
+        //super.onScroll(dx, dy);
+        if (getWidth() >= mImageWidth) {
+            //竖图
+        }
         mImageRect.offset((int) dx, (int) dy);
         invalidate();
     }

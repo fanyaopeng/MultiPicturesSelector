@@ -182,12 +182,6 @@ public class ScaleImageView extends ImageView {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             ScaleImageView.this.onScroll(distanceX, distanceY);
-            isNeedCheckBorder = true;
-            if (mCurScale == mInitScale) {
-                distanceY = 0;
-            }
-            matrix.postTranslate(-distanceX, -distanceY);
-            setImageMatrix(matrix);
             return true;
         }
     }
@@ -208,7 +202,12 @@ public class ScaleImageView extends ImageView {
     private boolean isInitAttach;
 
     protected void onScroll(float dx, float dy) {
-
+        isNeedCheckBorder = true;
+        if (mCurScale == mInitScale) {
+            dy = 0;
+        }
+        matrix.postTranslate(-dx, -dy);
+        setImageMatrix(matrix);
     }
 
     @Override
@@ -233,7 +232,7 @@ public class ScaleImageView extends ImageView {
         int height = getHeight();
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
-        if (height>dh&&width>dw){
+        if (height > dh && width > dw) {
             float scaleW = (float) width / (float) dw;
             float scaleH = (float) height / (float) dh;
             mInitScale = Math.min(scaleH, scaleW);
