@@ -2,6 +2,7 @@ package com.fan.library.activity;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -57,9 +58,9 @@ public class PreviewActivity extends Activity {
         imageViews.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
-                ScaleImageView imageView;
-
+                ScaleImageView imageView = new ScaleImageView(this);
                 if (Utils.isLongImage(PreviewActivity.this, p)) {
+                    // Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
                     imageView = new LargeScaleImageView(this);
                     LargeScaleImageView img = (LargeScaleImageView) imageView;
                     img.setImagePath(p);

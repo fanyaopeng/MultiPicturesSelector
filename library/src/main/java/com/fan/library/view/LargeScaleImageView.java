@@ -33,6 +33,7 @@ public class LargeScaleImageView extends ScaleImageView {
         super(context, attrs);
     }
 
+
     public void setImagePath(String path) {
         initDecoder(path);
     }
@@ -53,7 +54,6 @@ public class LargeScaleImageView extends ScaleImageView {
         mImageHeight = mOptions.outHeight;
         mImageWidth = mOptions.outWidth;
         mOptions.inJustDecodeBounds = false;
-
     }
 
     @Override
@@ -61,61 +61,34 @@ public class LargeScaleImageView extends ScaleImageView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (mImageRect == null)
             mImageRect = new Rect(0, 0, getMeasuredWidth(), getMeasuredHeight());
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        //super.onDraw(canvas);
-        Bitmap bitmap = decodeLongImage(mImageRect);
-        canvas.drawBitmap(bitmap, 0, 0, null);
-        if (getDrawable() == null) setImageBitmap(bitmap);
-    }
-
-    @Override
-    protected void onScroll(float dx, float dy) {
-        //super.onScroll(dx, dy);
-        isNeedCheckBorder = true;
-        if (getWidth() >= mImageWidth) {
-            //竖图
+        if (getDrawable() == null) {
+            setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
         }
-        if (mImageRect.left + dx <= 0) {
-            mImageRect.offsetTo(0, mImageRect.top);
-            super.onScroll(dx, dy);
+    }
+
+    @Override
+    protected void onScroll(float distanceX, float distanceY) {
+        if (mCurScale != 1.0f) {
+            super.onScroll(distanceX, distanceY);
             return;
         }
-        mImageRect.offset((int) dx, (int) dy);
-        invalidate();
-    }
-
-    private boolean isNeedCheckBorder;
-
-    private void checkBorder() {
-        Log.e("main", "rect  " + mImageRect.toString());
-        if (!isNeedCheckBorder) return;
-        isNeedCheckBorder = false;
-        int dx = 0;
-        int dy = 0;
-
+        mImageRect.offset((int) distanceX, (int) distanceY);
         if (mImageRect.left < 0) {
-            dx = -mImageRect.left;
+            //左越界
+            mImageRect.offsetTo(0, mImageRect.top);
+        }
+        if (mImageRect.right > mImageWidth) {
+            //右越界
+            mImageRect.offsetTo(0, mImageRect.top);
         }
         if (mImageRect.top < 0) {
-            dy = -mImageRect.top;
+            //上越界
+            mImageRect.offsetTo(mImageRect.left, 0);
         }
-        mImageRect.offset(dx, dy);
-        invalidate();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            //checkBorder();
+        if (mImageRect.bottom > mImageHeight) {
+            //下越界
+            mImageRect.offsetTo(mImageRect.left, mImageHeight - getHeight());
         }
-        return super.onTouchEvent(event);
+        setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
     }
-
-    private Bitmap decodeLongImage(Rect rect) {
-        return mDecoder.decodeRegion(rect, mOptions);
-    }
-
 }
