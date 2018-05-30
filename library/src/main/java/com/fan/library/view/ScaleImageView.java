@@ -1,10 +1,10 @@
 package com.fan.library.view;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -16,14 +16,11 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.VelocityTracker;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
-import android.widget.ScrollView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,10 +29,11 @@ public class ScaleImageView extends ImageView {
     protected Matrix matrix;
     private GestureDetector mGestureDetector;
     private float mMaxScale = 4;
-    protected float mCurScale = 1;
-    protected float mCenterScale = 2;
-    protected float mInitScale = 1.0f;
+    private float mCurScale = 1;
+    private float mCenterScale = 2;
+    private float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
+    private boolean isLongImage;
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -49,6 +47,10 @@ public class ScaleImageView extends ImageView {
         mGestureDetector = new GestureDetector(context, new TapCallback());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleCallback());
         matrix = getImageMatrix();
+    }
+
+    public void setLongImage(boolean isLongImage) {
+        this.isLongImage = isLongImage;
     }
 
     @Override
@@ -100,9 +102,6 @@ public class ScaleImageView extends ImageView {
         }
     }
 
-    protected void onFiling( float velocityX,  float velocityY) {
-
-    }
 
     private void resetScale() {
         matrix.postScale(mInitScale / mCurScale, mInitScale / mCurScale, getWidth() / 2, getHeight() / 2);
@@ -159,7 +158,7 @@ public class ScaleImageView extends ImageView {
         return rectF;
     }
 
-    protected void handleScroll(float distanceX, float distanceY) {
+    private void handleScroll(float distanceX, float distanceY) {
         isNeedCheckBorder = true;
         if (mCurScale == mInitScale) {
             distanceY = 0;
@@ -194,14 +193,12 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            handleScroll(distanceX, distanceY);
+            if (isLongImage) {
+                handleLongScroll(distanceX, distanceY);
+            } else {
+                handleScroll(distanceX, distanceY);
+            }
             return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            onFiling(velocityX, velocityY);
-            return super.onFling(e1, e2, velocityX, velocityY);
         }
     }
 
@@ -218,7 +215,7 @@ public class ScaleImageView extends ImageView {
             return false;
         }
     });
-    protected boolean isInitAttach;
+    private boolean isInitAttach;
 
     @Override
     protected void onAttachedToWindow() {
@@ -235,7 +232,7 @@ public class ScaleImageView extends ImageView {
         getViewTreeObserver().addOnGlobalLayoutListener(listener);
     }
 
-    protected void initAttach() {
+    private void initAttach() {
         Drawable d = getDrawable();
         if (d == null) return;
         int width = getWidth();
@@ -251,6 +248,56 @@ public class ScaleImageView extends ImageView {
         matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
         matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
+        if (isLongImage) {
+            initLongImage();
+        }
         isInitAttach = true;
+    }
+
+    private void handleLongScroll(float dx, float dy) {
+        mLongImageRect.offset(0, (int) dy);
+        invalidate();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        if (!isLongImage) {
+            super.onDraw(canvas);
+        } else {
+            Bitmap bitmap = decodeLongImage(mLongImageRect);
+            canvas.drawBitmap(bitmap, 0, 0, null);
+        }
+    }
+
+    private void initLongImage() {
+        initDecoder();
+    }
+
+    private BitmapRegionDecoder mDecoder;
+    private Rect mLongImageRect;
+
+    private void initDecoder() {
+        Bitmap bitmap = getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] b = baos.toByteArray();
+        try {
+            mDecoder = BitmapRegionDecoder.newInstance(b, 0, b.length, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mLongImageRect = new Rect(0, 0, getWidth(), getHeight());
+    }
+
+    private Bitmap decodeLongImage(Rect rect) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        return mDecoder.decodeRegion(rect, options);
+    }
+
+    private Bitmap getBitmap() {
+        BitmapDrawable drawable = (BitmapDrawable) getDrawable();
+        Bitmap bitmap = drawable.getBitmap();
+        return bitmap;
     }
 }

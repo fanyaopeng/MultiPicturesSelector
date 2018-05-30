@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.fan.library.R;
-import com.fan.library.view.LongScaleImageView;
 import com.fan.library.utils.Utils;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
@@ -57,17 +56,17 @@ public class PreviewActivity extends Activity {
         imageViews.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
+                ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
+                Bitmap result;
                 if (Utils.isLongImage(PreviewActivity.this, p)) {
-                    ImageView imageView = new LongScaleImageView(PreviewActivity.this);
-                    Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
-                    imageView.setImageBitmap(result);
-                    imageViews.add(imageView);
-                } else{
-                    ImageView imageView = new ScaleImageView(PreviewActivity.this);
-                    Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
-                    imageView.setImageBitmap(result);
-                    imageViews.add(imageView);
+                    result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
+                    imageView.setLongImage(true);
+
+                } else {
+                    result = Utils.compress(p, vp.getWidth(), vp.getHeight());
                 }
+                imageView.setImageBitmap(result);
+                imageViews.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);
                 gifImageView.setResource(p);
