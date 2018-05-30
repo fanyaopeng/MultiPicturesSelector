@@ -48,9 +48,9 @@ public class LongScaleImageView extends ScaleImageView {
     protected void handleScroll(float distanceX, float distanceY) {
         // super.handleScroll(distanceX, distanceY);
         int top = (int) (mLastBottom - getHeight() + distanceY);
-        mCurRect.set(0, top, getRight(), top + getHeight());
+        mCurRect.offset(0, (int) distanceY);
         //setImageBitmap(decodeLongImage(mCurRect));
-        mLastBottom = top + getHeight();
+        //mLastBottom = top + getHeight();
         invalidate();
     }
 
