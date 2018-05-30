@@ -20,7 +20,9 @@ import java.io.IOException;
 public class LargeScaleImageView extends ScaleImageView {
     private BitmapRegionDecoder mDecoder;
     private Rect mImageRect;
-
+    private BitmapFactory.Options mOptions;
+    private int mImageWidth;
+    private int mImageHeight;
 
     public LargeScaleImageView(Context context) {
         super(context);
@@ -59,7 +61,15 @@ public class LargeScaleImageView extends ScaleImageView {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        mOptions = new BitmapFactory.Options();
+        mOptions.inPreferredConfig = Bitmap.Config.RGB_565;
         mImageRect = new Rect(0, 0, getWidth(), getHeight());
+
+        mOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(b, 0, b.length, mOptions);
+        mImageHeight = mOptions.outHeight;
+        mImageWidth = mOptions.outWidth;
+        mOptions.inJustDecodeBounds = false;
     }
 
     @Override
@@ -72,14 +82,12 @@ public class LargeScaleImageView extends ScaleImageView {
     @Override
     protected void onScroll(float dx, float dy) {
         super.onScroll(dx, dy);
-        mImageRect.offset(0, (int) dy);
+        mImageRect.offset((int) dx, (int) dy);
         invalidate();
     }
 
     private Bitmap decodeLongImage(Rect rect) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        return mDecoder.decodeRegion(rect, options);
+        return mDecoder.decodeRegion(rect, mOptions);
     }
 
 }

@@ -16,6 +16,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -110,8 +111,8 @@ public class ScaleImageView extends ImageView {
         if (!isNeedCheckBorder) return;
         RectF rectF = getMatrixRectF();
 
-//        Log.e("main", rectF.toString());
-//        Log.e("main", "width " + rectF.width());
+        Log.e("main", rectF.toString());
+        Log.e("main", "width " + rectF.width());
         float dx = 0;
         float dy = 0;
         float width = getWidth();
@@ -232,15 +233,17 @@ public class ScaleImageView extends ImageView {
         int height = getHeight();
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
-        float scaleW = (float) width / (float) dw;
-        float scaleH = (float) height / (float) dh;
-        mInitScale = Math.min(scaleH, scaleW);
-        mCurScale = mInitScale;
-        mMaxScale = mInitScale * 4;
-        mCenterScale = mInitScale * 2;
-        matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-        matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
-        setImageMatrix(matrix);
-        isInitAttach = true;
+        if (height>dh&&width>dw){
+            float scaleW = (float) width / (float) dw;
+            float scaleH = (float) height / (float) dh;
+            mInitScale = Math.min(scaleH, scaleW);
+            mCurScale = mInitScale;
+            mMaxScale = mInitScale * 4;
+            mCenterScale = mInitScale * 2;
+            matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
+            matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
+            setImageMatrix(matrix);
+            isInitAttach = true;
+        }
     }
 }
