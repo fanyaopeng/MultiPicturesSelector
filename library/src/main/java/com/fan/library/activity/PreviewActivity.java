@@ -2,14 +2,11 @@ package com.fan.library.activity;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.BitmapRegionDecoder;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -17,12 +14,11 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.fan.library.R;
-import com.fan.library.utils.LongScaleImageView;
 import com.fan.library.utils.Utils;
 import com.fan.library.view.GifImageView;
+import com.fan.library.view.LargeScaleImageView;
 import com.fan.library.view.ScaleImageView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,17 +57,18 @@ public class PreviewActivity extends Activity {
         imageViews.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
-                if (Utils.isLongImage(p, vp.getWidth(), vp.getHeight())) {
-                    ImageView imageView = new LongScaleImageView(PreviewActivity.this);
-                    Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
-                    imageView.setImageBitmap(result);
-                    imageViews.add(imageView);
+                ScaleImageView imageView;
+
+                if (Utils.isLongImage(PreviewActivity.this, p)) {
+                    imageView = new LargeScaleImageView(this);
+                    LargeScaleImageView img = (LargeScaleImageView) imageView;
+                    img.setImagePath(p);
                 } else {
-                    ImageView imageView = new ScaleImageView(PreviewActivity.this);
+                    imageView = new ScaleImageView(this);
                     Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
                     imageView.setImageBitmap(result);
-                    imageViews.add(imageView);
                 }
+                imageViews.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);
                 gifImageView.setResource(p);

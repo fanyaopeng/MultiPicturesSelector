@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -26,12 +27,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class ScaleImageView extends ImageView {
-    private Matrix matrix;
+    protected Matrix matrix;
     private GestureDetector mGestureDetector;
     private float mMaxScale = 4;
-    protected float mCurScale = 1;
-    protected float mCenterScale = 2;
-    protected float mInitScale = 1.0f;
+    private float mCurScale = 1;
+    private float mCenterScale = 2;
+    private float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
 
     public ScaleImageView(Context context) {
@@ -97,6 +98,7 @@ public class ScaleImageView extends ImageView {
         }
     }
 
+
     private void resetScale() {
         matrix.postScale(mInitScale / mCurScale, mInitScale / mCurScale, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
@@ -109,8 +111,8 @@ public class ScaleImageView extends ImageView {
         if (!isNeedCheckBorder) return;
         RectF rectF = getMatrixRectF();
 
-//        Log.e("main", rectF.toString());
-//        Log.e("main", "width " + rectF.width());
+        Log.e("main", rectF.toString());
+        Log.e("main", "width " + rectF.width());
         float dx = 0;
         float dy = 0;
         float width = getWidth();
@@ -152,15 +154,6 @@ public class ScaleImageView extends ImageView {
         return rectF;
     }
 
-    protected void handleScroll(float distanceX, float distanceY) {
-        isNeedCheckBorder = true;
-
-        setImageMatrix(matrix);
-        if (mCurScale == mInitScale) {
-            distanceY = 0;
-        }
-        matrix.postTranslate(-distanceX, -distanceY);
-    }
 
     private class TapCallback extends GestureDetector.SimpleOnGestureListener {
 
@@ -188,7 +181,7 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            handleScroll(distanceX, distanceY);
+            ScaleImageView.this.onScroll(distanceX, distanceY);
             return true;
         }
     }
@@ -206,7 +199,16 @@ public class ScaleImageView extends ImageView {
             return false;
         }
     });
-    protected boolean isInitAttach;
+    private boolean isInitAttach;
+
+    protected void onScroll(float dx, float dy) {
+        isNeedCheckBorder = true;
+        if (mCurScale == mInitScale) {
+            dy = 0;
+        }
+        matrix.postTranslate(-dx, -dy);
+        setImageMatrix(matrix);
+    }
 
     @Override
     protected void onAttachedToWindow() {
@@ -223,22 +225,26 @@ public class ScaleImageView extends ImageView {
         getViewTreeObserver().addOnGlobalLayoutListener(listener);
     }
 
-    protected void initAttach() {
+
+    private void initAttach() {
         Drawable d = getDrawable();
         if (d == null) return;
         int width = getWidth();
         int height = getHeight();
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
-        float scaleW = (float) width / (float) dw;
-        float scaleH = (float) height / (float) dh;
-        mInitScale = Math.min(scaleH, scaleW);
-        mCurScale = mInitScale;
-        mMaxScale = mInitScale * 4;
-        mCenterScale = mInitScale * 2;
-        matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-        matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
-        setImageMatrix(matrix);
-        isInitAttach = true;
+        Log.e("main", "width  " + width);
+        if (height > dh && width > dw) {
+            float scaleW = (float) width / (float) dw;
+            float scaleH = (float) height / (float) dh;
+            mInitScale = Math.min(scaleH, scaleW);
+            mCurScale = mInitScale;
+            mMaxScale = mInitScale * 4;
+            mCenterScale = mInitScale * 2;
+            matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
+            matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
+            setImageMatrix(matrix);
+            isInitAttach = true;
+        }
     }
 }
