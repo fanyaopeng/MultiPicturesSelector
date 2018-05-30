@@ -33,7 +33,6 @@ public class ScaleImageView extends ImageView {
     private float mCenterScale = 2;
     private float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
-    private boolean isLongImage;
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -47,10 +46,6 @@ public class ScaleImageView extends ImageView {
         mGestureDetector = new GestureDetector(context, new TapCallback());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleCallback());
         matrix = getImageMatrix();
-    }
-
-    public void setLongImage(boolean isLongImage) {
-        this.isLongImage = isLongImage;
     }
 
     @Override
@@ -158,14 +153,6 @@ public class ScaleImageView extends ImageView {
         return rectF;
     }
 
-    private void handleScroll(float distanceX, float distanceY) {
-        isNeedCheckBorder = true;
-        if (mCurScale == mInitScale) {
-            distanceY = 0;
-        }
-        matrix.postTranslate(-distanceX, -distanceY);
-        setImageMatrix(matrix);
-    }
 
     private class TapCallback extends GestureDetector.SimpleOnGestureListener {
 
@@ -193,11 +180,13 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (isLongImage) {
-                handleLongScroll(distanceX, distanceY);
-            } else {
-                handleScroll(distanceX, distanceY);
+            ScaleImageView.this.onScroll(distanceX, distanceY);
+            isNeedCheckBorder = true;
+            if (mCurScale == mInitScale) {
+                distanceY = 0;
             }
+            matrix.postTranslate(-distanceX, -distanceY);
+            setImageMatrix(matrix);
             return true;
         }
     }
@@ -216,6 +205,10 @@ public class ScaleImageView extends ImageView {
         }
     });
     private boolean isInitAttach;
+
+    protected void onScroll(float dx, float dy) {
+
+    }
 
     @Override
     protected void onAttachedToWindow() {
@@ -248,56 +241,6 @@ public class ScaleImageView extends ImageView {
         matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
         matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
-        if (isLongImage) {
-            initLongImage();
-        }
         isInitAttach = true;
-    }
-
-    private void handleLongScroll(float dx, float dy) {
-        mLongImageRect.offset(0, (int) dy);
-        invalidate();
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        if (!isLongImage) {
-            super.onDraw(canvas);
-        } else {
-            Bitmap bitmap = decodeLongImage(mLongImageRect);
-            canvas.drawBitmap(bitmap, 0, 0, null);
-        }
-    }
-
-    private void initLongImage() {
-        initDecoder();
-    }
-
-    private BitmapRegionDecoder mDecoder;
-    private Rect mLongImageRect;
-
-    private void initDecoder() {
-        Bitmap bitmap = getBitmap();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        byte[] b = baos.toByteArray();
-        try {
-            mDecoder = BitmapRegionDecoder.newInstance(b, 0, b.length, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mLongImageRect = new Rect(0, 0, getWidth(), getHeight());
-    }
-
-    private Bitmap decodeLongImage(Rect rect) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        return mDecoder.decodeRegion(rect, options);
-    }
-
-    private Bitmap getBitmap() {
-        BitmapDrawable drawable = (BitmapDrawable) getDrawable();
-        Bitmap bitmap = drawable.getBitmap();
-        return bitmap;
     }
 }
