@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
 
 import java.io.ByteArrayOutputStream;
@@ -82,11 +83,39 @@ public class LargeScaleImageView extends ScaleImageView {
     @Override
     protected void onScroll(float dx, float dy) {
         //super.onScroll(dx, dy);
+        isNeedCheckBorder = true;
         if (getWidth() >= mImageWidth) {
             //竖图
         }
         mImageRect.offset((int) dx, (int) dy);
         invalidate();
+    }
+
+    private boolean isNeedCheckBorder;
+
+    private void checkBorder() {
+        Log.e("main", "rect  " + mImageRect.toString());
+        if (!isNeedCheckBorder) return;
+        isNeedCheckBorder = false;
+        int dx = 0;
+        int dy = 0;
+
+        if (mImageRect.left > 0) {
+            dx = -mImageRect.left;
+        }
+        if (mImageRect.top > 0) {
+            dy = -mImageRect.top;
+        }
+        mImageRect.offset(dx, dy);
+        invalidate();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            checkBorder();
+        }
+        return super.onTouchEvent(event);
     }
 
     private Bitmap decodeLongImage(Rect rect) {
