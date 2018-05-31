@@ -245,11 +245,29 @@ public class ScaleImageView extends ImageView {
 
     protected void onScroll(float distanceX, float distanceY) {
         isNeedCheckBorder = true;
+        checkIntercept(distanceX);
         if (mCurScale == mInitScale) {
             distanceY = 0;
         }
         matrix.postTranslate(-distanceX, -distanceY);
         setImageMatrix(matrix);
+    }
+
+    private void checkIntercept(float dx) {
+        RectF rectF = getMatrixRectF();
+        float width = getWidth();
+        float height = getHeight();
+        Log.e("main", "dx  " + dx);
+        Log.e("main", "rectf  " + rectF.toString());
+        if (rectF.height() > height || rectF.width() >= width) {
+            if (rectF.right == width && dx > 0) {
+                getParent().requestDisallowInterceptTouchEvent(false);
+            } else if (rectF.left == 0 && dx < 0) {
+                getParent().requestDisallowInterceptTouchEvent(false);
+            } else {
+                getParent().requestDisallowInterceptTouchEvent(true);
+            }
+        }
     }
 
     @Override
@@ -280,13 +298,21 @@ public class ScaleImageView extends ImageView {
             float scaleW = (float) width / (float) dw;
             float scaleH = (float) height / (float) dh;
             mInitScale = Math.min(scaleH, scaleW);
-            mCurScale = mInitScale;
-            mMaxScale = mInitScale * 4;
-            mCenterScale = mInitScale * 2;
-            matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-            matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
-            setImageMatrix(matrix);
         }
+        if (dh > height && dw < width) {
+
+        }
+        mCurScale = mInitScale;
+        mMaxScale = mInitScale * 4;
+        mCenterScale = mInitScale * 2;
+        matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
+        matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
+        setImageMatrix(matrix);
         isInitAttach = true;
+    }
+
+    public void rotate(float degree) {
+        matrix.postRotate(degree, getWidth() / 2, getHeight() / 2);
+        setImageMatrix(matrix);
     }
 }

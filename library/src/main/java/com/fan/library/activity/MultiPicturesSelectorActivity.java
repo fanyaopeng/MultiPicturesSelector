@@ -407,7 +407,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 params.width = mItemSize;
                 params.height = mItemSize;
                 ImageView img = holder.img;
-                final String path = mSelectDirsPictures.get(position).getPath();
+                final String path = mSelectDirsPictures.get(position-1).getPath();
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
                         path, img, mItemSize, mItemSize));
                 holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);

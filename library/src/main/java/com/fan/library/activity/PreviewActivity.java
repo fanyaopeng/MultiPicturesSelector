@@ -1,8 +1,8 @@
 package com.fan.library.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,13 +11,12 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.fan.library.R;
 import com.fan.library.utils.Utils;
 import com.fan.library.view.GifImageView;
-import com.fan.library.view.LargeScaleImageView;
 import com.fan.library.view.ScaleImageView;
 
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ public class PreviewActivity extends Activity {
     private List<String> paths;
     private RelativeLayout mTopBar;
     private RelativeLayout mBottomBar;
+    private TextView tvTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +45,15 @@ public class PreviewActivity extends Activity {
         mTopBar = findViewById(R.id.top_bar);
         mBottomBar = findViewById(R.id.bottom_bar);
         mBottomBar.setAlpha(0.8f);
+        tvTitle = findViewById(R.id.title);
+        findViewById(R.id.tv_edit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
+                intent.putExtra("path", paths.get(vp.getCurrentItem()));
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -58,17 +67,20 @@ public class PreviewActivity extends Activity {
         imageViews.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
-                ScaleImageView imageView = new ScaleImageView(this);
-                if (Utils.isLongImage(PreviewActivity.this, p)) {
-                    // Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
-                    imageView = new LargeScaleImageView(this);
-                    LargeScaleImageView img = (LargeScaleImageView) imageView;
-                    img.setImagePath(p);
-                } else {
-                    imageView = new ScaleImageView(this);
-                    Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
-                    imageView.setImageBitmap(result);
-                }
+                ScaleImageView imageView;
+//                if (Utils.isLongImage(PreviewActivity.this, p)) {
+//                    // Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
+//                    imageView = new LargeScaleImageView(this);
+//                    LargeScaleImageView img = (LargeScaleImageView) imageView;
+//                    img.setImagePath(p);
+//                } else {
+//                    imageView = new ScaleImageView(this);
+//                    Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
+//                    imageView.setImageBitmap(result);
+//                }
+                imageView = new ScaleImageView(this);
+                Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
+                imageView.setImageBitmap(result);
                 imageViews.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);
@@ -78,7 +90,24 @@ public class PreviewActivity extends Activity {
         }
         if (imageViews.size() != 0)
             vp.setAdapter(new ImageAdapter());
+        tvTitle.setText(vp.getCurrentItem() + 1 + "/" + paths.size());
         initTop();
+        vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                tvTitle.setText(position + 1 + "/" + paths.size());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
     }
 
     private List<View> imageViews = new ArrayList<>();
