@@ -68,27 +68,39 @@ public class LargeScaleImageView extends ScaleImageView {
 
     @Override
     protected void onScroll(float distanceX, float distanceY) {
+        //Log.e("main", "rect  " + mImageRect.toString());
         if (mCurScale != 1.0f) {
-            super.onScroll(distanceX, distanceY);
-            return;
+
         }
         mImageRect.offset((int) distanceX, (int) distanceY);
-        if (mImageRect.left < 0) {
-            //左越界
-            mImageRect.offsetTo(0, mImageRect.top);
-        }
-        if (mImageRect.right > mImageWidth) {
-            //右越界
-            mImageRect.offsetTo(0, mImageRect.top);
-        }
-        if (mImageRect.top < 0) {
-            //上越界
-            mImageRect.offsetTo(mImageRect.left, 0);
-        }
-        if (mImageRect.bottom > mImageHeight) {
-            //下越界
-            mImageRect.offsetTo(mImageRect.left, mImageHeight - getHeight());
-        }
+//        if (mImageRect.left < 0) {
+//            //左越界
+//            mImageRect.offsetTo(0, mImageRect.top);
+//        }
+//        if (mImageRect.right > mImageWidth) {
+//            //右越界
+//            mImageRect.offsetTo(0, mImageRect.top);
+//        }
+//        if (mImageRect.top < 0) {
+//            //上越界
+//            mImageRect.offsetTo(mImageRect.left, 0);
+//        }
+//        if (mImageRect.bottom > mImageHeight) {
+//            //下越界
+//            mImageRect.offsetTo(mImageRect.left, mImageHeight - getHeight());
+//        }
         setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
+    }
+
+    private boolean check() {
+        return mImageRect.left < 0 || mImageRect.right > mImageWidth || mImageRect.top <= 0 || mImageRect.bottom >= mImageHeight;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+
+        }
+        return super.onTouchEvent(event);
     }
 }

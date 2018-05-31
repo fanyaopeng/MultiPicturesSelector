@@ -186,7 +186,7 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-
+            //fling(e1, e2, velocityX, velocityY);
             return super.onFling(e1, e2, velocityX, velocityY);
         }
 
@@ -194,15 +194,38 @@ public class ScaleImageView extends ImageView {
 
     private void fling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 
-
+        RectF rectF = getMatrixRectF();
+        if (rectF.width() < getWidth() && rectF.height() < getHeight()) return;
+        int startX = -Math.round(rectF.left);
+        int startY = -Math.round(rectF.top);
+        int minX, minY, maxX, maxY;
+        maxX = Math.round(rectF.width() - getWidth());
+        minX = 0;
+        minY = 0;
+        maxY = Math.round(rectF.height() - getHeight());
+        mScroller.fling(startX, startY, (int) velocityX, (int) velocityY, minX, maxX, minY, maxY);
+        invalidate();
     }
 
     @Override
     public void computeScroll() {
         super.computeScroll();
-        if (mScroller.computeScrollOffset()) {
+//        if (mScroller.computeScrollOffset()) {
+//            Log.e("main", "curX " + mScroller.getCurrX() + "  curY  " + mScroller.getCurrY());
+//            float[] cur = getTranslate();
+//            int dx = Math.round(mScroller.getCurrX() - cur[0]);
+//            int dy = Math.round(mScroller.getCurrY() - cur[1]);
+//            matrix.postTranslate(dx, dy);
+//        }
+    }
 
-        }
+    private float[] getTranslate() {
+        float[] result = new float[2];
+        float[] points = new float[9];
+        matrix.getValues(points);
+        result[0] = points[Matrix.MTRANS_X];
+        result[1] = points[Matrix.MTRANS_Y];
+        return result;
     }
 
     private Handler handler = new Handler(new Handler.Callback() {
