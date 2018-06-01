@@ -38,6 +38,12 @@ public class PreviewActivity extends Activity {
         }
         paths = getIntent().getStringArrayListExtra("paths");
         initView();
+        vp.post(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        });
     }
 
     private void initView() {
@@ -54,13 +60,6 @@ public class PreviewActivity extends Activity {
                 startActivity(intent);
             }
         });
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (vp.getAdapter() == null)
-            init();
     }
 
     private void init() {
