@@ -1,7 +1,11 @@
 package com.fan.library.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -17,6 +21,8 @@ import android.view.ScaleGestureDetector;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.Scroller;
+
+import java.io.IOException;
 
 public class ScaleImageView extends ImageView {
     protected Matrix matrix;
@@ -173,7 +179,16 @@ public class ScaleImageView extends ImageView {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
             isDoubleTap = false;
-            handler.sendEmptyMessageDelayed(1, 1000);
+            postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isDoubleTap) {
+                        if (mGestureListener != null) {
+                            mGestureListener.onSingleTapUp();
+                        }
+                    }
+                }
+            }, 1000);
             return super.onSingleTapUp(e);
         }
 
@@ -228,19 +243,6 @@ public class ScaleImageView extends ImageView {
         return result;
     }
 
-    private Handler handler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (msg.what == 1) {
-                if (!isDoubleTap) {
-                    if (mGestureListener != null) {
-                        mGestureListener.onSingleTapUp();
-                    }
-                }
-            }
-            return false;
-        }
-    });
     private boolean isInitAttach;
 
     protected void onScroll(float distanceX, float distanceY) {
@@ -257,8 +259,6 @@ public class ScaleImageView extends ImageView {
         RectF rectF = getMatrixRectF();
         float width = getWidth();
         float height = getHeight();
-        Log.e("main", "dx  " + dx);
-        Log.e("main", "rectf  " + rectF.toString());
         if (rectF.height() > height || rectF.width() >= width) {
             if (rectF.right == width && dx > 0) {
                 getParent().requestDisallowInterceptTouchEvent(false);
@@ -268,6 +268,24 @@ public class ScaleImageView extends ImageView {
                 getParent().requestDisallowInterceptTouchEvent(true);
             }
         }
+    }
+
+    private String mPath;
+    private BitmapRegionDecoder mDecorder;
+
+    public void setPath(String path) {
+        mPath = path;
+        try {
+            mDecorder = BitmapRegionDecoder.newInstance(mPath, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showClip(Rect rect) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        setImageBitmap(mDecorder.decodeRegion(rect, options));
     }
 
     @Override
@@ -284,7 +302,6 @@ public class ScaleImageView extends ImageView {
         };
         getViewTreeObserver().addOnGlobalLayoutListener(listener);
     }
-
 
     private void initAttach() {
         Drawable d = getDrawable();
