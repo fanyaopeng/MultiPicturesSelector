@@ -52,27 +52,6 @@ public class ClipShapeView extends View {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             Log.e("main", "dx  " + distanceX + "  dy  " + distanceY);
-            //处理缩小越界
-            if (mLeft + mCornerSize > mRight - mCornerSize) {
-                mLeft = mRight - mCornerSize - mCornerSize;
-            }
-            if (mTop + mCornerSize > mBottom - mCornerSize) {
-                mTop = mBottom - mCornerSize - mCornerSize;
-            }
-
-
-//            if (mLeft < 0) {
-//                mLeft = mPadding;
-//            }
-//            if (mRight > getWidth() - mPadding) {
-//                mRight = getWidth() - mPadding;
-//            }
-//            if (mTop < 0) {
-//                mTop = mPadding;
-//            }
-//            if (mBottom > getHeight() - mPadding) {
-//                mBottom = getHeight() - mPadding;
-//            }
             switch (mCurScrollRange) {
                 case LEFT_TOP:
                     mLeft -= distanceX;
@@ -90,6 +69,27 @@ public class ClipShapeView extends View {
                     mRight -= distanceX;
                     mBottom -= distanceY;
                     break;
+            }
+            //处理缩小越界
+            if (mLeft + mCornerSize > mRight - mCornerSize) {
+                mLeft = mRight - mCornerSize - mCornerSize;
+            }
+            if (mTop + mCornerSize > mBottom - mCornerSize) {
+                mTop = mBottom - mCornerSize - mCornerSize;
+            }
+
+            //处理 周围越界
+            if (mLeft < 0) {
+                mLeft = mPadding;
+            }
+            if (mRight > getWidth() - mPadding) {
+                mRight = getWidth() - mPadding;
+            }
+            if (mTop < 0) {
+                mTop = mPadding;
+            }
+            if (mBottom > getHeight() - mPadding) {
+                mBottom = getHeight() - mPadding;
             }
             invalidate();
             return true;
