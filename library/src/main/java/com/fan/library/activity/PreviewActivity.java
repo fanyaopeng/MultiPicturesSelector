@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 
 import com.fan.library.R;
 import com.fan.library.utils.Utils;
+import com.fan.library.view.EditImageView;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
 
@@ -57,9 +59,26 @@ public class PreviewActivity extends Activity {
             public void onClick(View v) {
                 Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
                 intent.putExtra("path", paths.get(vp.getCurrentItem()));
-                startActivity(intent);
+                startActivityForResult(intent, requestEdit);
             }
         });
+    }
+
+    private int requestEdit = 1;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == requestEdit) {
+            if (resultCode == RESULT_OK) {
+                String path = data.getStringExtra("path");
+                paths.set(vp.getCurrentItem(), path);
+                ScaleImageView image = (ScaleImageView) imageViews.get(vp.getCurrentItem());
+                Bitmap result = Utils.compress(path, vp.getWidth(), vp.getHeight());
+                image.setImageBitmap(result);
+                vp.getAdapter().notifyDataSetChanged();
+            }
+        }
     }
 
     private void init() {
@@ -137,6 +156,11 @@ public class PreviewActivity extends Activity {
         @Override
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
             container.removeView(imageViews.get(position));
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            return POSITION_NONE;
         }
     }
 

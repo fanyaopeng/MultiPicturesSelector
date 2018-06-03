@@ -69,9 +69,6 @@ public class LargeScaleImageView extends ScaleImageView {
     @Override
     protected void onScroll(float distanceX, float distanceY) {
         Log.e("main", "rect  " + mImageRect.toString());
-        if (mCurScale != 1.0f) {
-
-        }
         mImageRect.offset((int) distanceX, (int) distanceY);
 
         setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));

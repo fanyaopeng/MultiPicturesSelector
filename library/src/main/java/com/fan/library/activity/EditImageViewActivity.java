@@ -1,23 +1,25 @@
 package com.fan.library.activity;
 
 import android.app.Activity;
-import android.graphics.Rect;
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.fan.library.R;
-import com.fan.library.utils.Utils;
-import com.fan.library.view.ClipShapeView;
-import com.fan.library.view.ScaleImageView;
+import com.fan.library.view.EditableLayout;
+import com.fan.library.view.ColorSelectView;
 
-public class EditImageViewActivity extends Activity implements ClipShapeView.OnScrollStopListener {
-    private ScaleImageView img;
+public class EditImageViewActivity extends Activity implements View.OnClickListener, EditableLayout.OnProcessListener, EditableLayout.OnImagePosChangeListener {
     String mPath;
-    private ClipShapeView mShape;
+
+    private RelativeLayout mAllOperation;
+    private EditableLayout mEditLayout;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -28,44 +30,54 @@ public class EditImageViewActivity extends Activity implements ClipShapeView.OnS
     }
 
     private void initView() {
-        img = findViewById(R.id.image);
-        mShape = findViewById(R.id.shape);
-//        mShape.setScaleX(0.8f);
-//        mShape.setScaleY(0.8f);
+        mEditLayout = findViewById(R.id.edit_layout);
+
+        mAllOperation = findViewById(R.id.rel_all_operation);
         mPath = getIntent().getStringExtra("path");
-        img.post(new Runnable() {
-            @Override
-            public void run() {
-                img.setImageBitmap(Utils.compress(mPath, img.getWidth(), img.getHeight()));
-                img.setPath(mPath);
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mShape.getLayoutParams();
-                params.width = (int) (img.getWidth() * 0.8f + mShape.getPadding());
-                params.height = (int) (img.getHeight() * 0.8f + mShape.getPadding());
-                params.gravity = Gravity.CENTER;
-                mShape.requestLayout();
-            }
-        });
-        mShape.setOnScrollStopListener(this);
-        findViewById(R.id.img_clip).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //img.rotate(-90);
-                float cur = img.getScaleX();
-                if (cur == 1.0f) {
-                    img.animate().scaleX(0.8f).scaleY(0.8f).setDuration(200).start();
-                    mShape.setVisibility(View.VISIBLE);
-                    //img.animate().translationYBy(co)
-                } else {
-                    img.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
-                    mShape.setVisibility(View.GONE);
-                }
-            }
-        });
+        mEditLayout.setPath(mPath);
+        findViewById(R.id.img_clip).setOnClickListener(this);
+
+        findViewById(R.id.tv_edit).setOnClickListener(this);
+        mEditLayout.setOnImagePosChangeListener(this);
+        mEditLayout.setOnProcessListener(this);
     }
 
     @Override
-    public void onScrollStop(float left, float top, float right, float bottom) {
-        img.showClip(new Rect(Math.round(left), Math.round(top), Math.round(right), Math.round(bottom)));
+    public void onClick(View v) {
+        if (v.getId() == R.id.img_clip) {
+            //img.rotate(-90);
+            mEditLayout.togglePos();
+            mEditLayout.setStatus(EditableLayout.Status.clip);
+        }
+        if (v.getId() == R.id.tv_edit) {
+            mEditLayout.setStatus(EditableLayout.Status.edit);
+        }
     }
 
+    private Dialog process;
+
+    @Override
+    public void onProcessStart() {
+        process = new Dialog(this);
+        process.setContentView(R.layout.dialog_process);
+        process.show();
+    }
+
+    @Override
+    public void onProcessEnd(String path) {
+        process.dismiss();
+        Intent intent = new Intent();
+        intent.putExtra("path", path);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
+
+    @Override
+    public void onPosChange(boolean isIn) {
+        if (isIn) {
+            mAllOperation.setVisibility(View.GONE);
+        } else {
+            mAllOperation.setVisibility(View.VISIBLE);
+        }
+    }
 }

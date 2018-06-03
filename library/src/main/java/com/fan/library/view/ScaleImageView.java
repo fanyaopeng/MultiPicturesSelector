@@ -1,27 +1,24 @@
 package com.fan.library.view;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapRegionDecoder;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class ScaleImageView extends ImageView {
@@ -62,8 +59,39 @@ public class ScaleImageView extends ImageView {
         }
         return true;
     }
+//
+//    private boolean isInEidt;
+//
+//    public void setInEditStatus(boolean isInEdit) {
+//        this.isInEidt = isInEdit;
+//    }
+//    private int mEditColor;
+//
+//    public void setEditColor(@ColorInt int color) {
+//        mEditColor = color;
+//    }
 
     private OnGestureListener mGestureListener;
+
+    public Bitmap clipImage(Rect rect) {
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        draw(canvas);
+        RectF rectF = getMatrixRectF();
+        if (rect.left < rectF.left) {
+            rect.left = (int) rectF.left;
+        }
+        if (rect.top < rectF.top) {
+            rect.top = (int) rectF.top;
+        }
+        if (rect.right > rectF.right) {
+            rect.right = (int) rectF.right;
+        }
+        if (rect.bottom > rectF.bottom) {
+            rect.bottom = (int) rectF.bottom;
+        }
+        return Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height());
+    }
 
     public interface OnGestureListener {
         void onSingleTapUp();
@@ -150,7 +178,7 @@ public class ScaleImageView extends ImageView {
         isNeedCheckBorder = false;
     }
 
-    private RectF getMatrixRectF() {
+    public RectF getMatrixRectF() {
         RectF rectF = new RectF();
         Drawable d = getDrawable();
         rectF.set(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
@@ -222,28 +250,8 @@ public class ScaleImageView extends ImageView {
         invalidate();
     }
 
-    @Override
-    public void computeScroll() {
-        super.computeScroll();
-//        if (mScroller.computeScrollOffset()) {
-//            Log.e("main", "curX " + mScroller.getCurrX() + "  curY  " + mScroller.getCurrY());
-//            float[] cur = getTranslate();
-//            int dx = Math.round(mScroller.getCurrX() - cur[0]);
-//            int dy = Math.round(mScroller.getCurrY() - cur[1]);
-//            matrix.postTranslate(dx, dy);
-//        }
-    }
 
-    private float[] getTranslate() {
-        float[] result = new float[2];
-        float[] points = new float[9];
-        matrix.getValues(points);
-        result[0] = points[Matrix.MTRANS_X];
-        result[1] = points[Matrix.MTRANS_Y];
-        return result;
-    }
-
-    private boolean isInitAttach;
+    private boolean isInitScale;
 
     protected void onScroll(float distanceX, float distanceY) {
         isNeedCheckBorder = true;
@@ -270,44 +278,43 @@ public class ScaleImageView extends ImageView {
         }
     }
 
-    private String mPath;
-    private BitmapRegionDecoder mDecorder;
-
-    public void setPath(String path) {
-        mPath = path;
-        try {
-            mDecorder = BitmapRegionDecoder.newInstance(mPath, true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        //canvas.drawColor(getContext().getResources().);
+        super.onDraw(canvas);
     }
 
-    public void showClip(Rect rect) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.RGB_565;
-        setImageBitmap(mDecorder.decodeRegion(rect, options));
+
+    private void slowScale(float target) {
+        //float cur = mCurScale;
+        ValueAnimator animator = new ValueAnimator();
+        animator.setFloatValues(mCurScale, target);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float cur = (float) animation.getAnimatedValue();
+                matrix.postScale(cur, cur, getWidth() / 2, getHeight() / 2);
+                setImageMatrix(matrix);
+            }
+        });
+        mCurScale = target;
+        animator.setDuration(200).start();
     }
 
     @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
-        ViewTreeObserver.OnGlobalLayoutListener listener = new ViewTreeObserver.OnGlobalLayoutListener() {
-            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-            @Override
-            public void onGlobalLayout() {
-                if (isInitAttach) return;
-                initAttach();
-                getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        };
-        getViewTreeObserver().addOnGlobalLayoutListener(listener);
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        init();
     }
 
-    private void initAttach() {
+
+    private void init() {
+        if (isInitScale) return;
         Drawable d = getDrawable();
         if (d == null) return;
-        int width = getWidth();
-        int height = getHeight();
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
         Log.e("main", "dw  " + dw + "dh  " + dh);
@@ -316,16 +323,18 @@ public class ScaleImageView extends ImageView {
             float scaleH = (float) height / (float) dh;
             mInitScale = Math.min(scaleH, scaleW);
         }
-        if (dh > height && dw < width) {
-
+        if (dh > height && dw > width) {
+            float scaleW = (float) width / (float) dw;
+            float scaleH = (float) height / (float) dh;
+            mInitScale = Math.min(scaleH, scaleW);
         }
         mCurScale = mInitScale;
         mMaxScale = mInitScale * 4;
         mCenterScale = mInitScale * 2;
         matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-        matrix.postScale(mInitScale, mInitScale, getWidth() / 2, getHeight() / 2);
+        matrix.postScale(mInitScale, mInitScale, width / 2, height / 2);
         setImageMatrix(matrix);
-        isInitAttach = true;
+        isInitScale = true;
     }
 
     public void rotate(float degree) {
