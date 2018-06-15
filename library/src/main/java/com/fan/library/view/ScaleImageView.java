@@ -17,19 +17,15 @@ import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 public class ScaleImageView extends ImageView {
     protected Matrix matrix;
     private GestureDetector mGestureDetector;
     private float mMaxScale = 4;
-    protected float mCurScale = 1;
     private float mCenterScale = 2;
     private float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
     private Scroller mScroller;
+    private float[] mScaleFocus = new float[2];
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -51,11 +47,11 @@ public class ScaleImageView extends ImageView {
         mGestureDetector.onTouchEvent(event);
         mScaleGestureDetector.onTouchEvent(event);
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (mCurScale < mInitScale) {
-                resetScale();
-            }
             if (isScale) isScale = false;
-            checkBorder();
+            if (checkScrollBorder) {
+                checkBorder();
+                checkScrollBorder = false;
+            }
         }
         return true;
     }
@@ -108,12 +104,13 @@ public class ScaleImageView extends ImageView {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             float factor = detector.getScaleFactor();
-            if (mCurScale * factor < 0.5f) {
+            if (getCurScale() * factor < 0.5f * mInitScale) {
                 return true;
             }
-            isNeedCheckBorder = true;
             isScale = true;
-            mCurScale = mCurScale * factor;
+            mScaleFocus[0] = detector.getFocusX();
+            mScaleFocus[1] = detector.getFocusY();
+
             matrix.postScale(factor, factor, detector.getFocusX(), detector.getFocusY());
             setImageMatrix(matrix);
             return true;
@@ -122,25 +119,20 @@ public class ScaleImageView extends ImageView {
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
             super.onScaleEnd(detector);
-            if (mCurScale > mMaxScale) {
-                matrix.postScale(mMaxScale / mCurScale, mMaxScale / mCurScale, getWidth() / 2, getHeight() / 2);
-                setImageMatrix(matrix);
-                mCurScale = mMaxScale;
+            if (getCurScale() > mMaxScale) {
+                slowScale(mMaxScale);
+            }
+            if (getCurScale() < mInitScale) {
+                resetScale();
             }
         }
     }
 
-
     private void resetScale() {
-        matrix.postScale(mInitScale / mCurScale, mInitScale / mCurScale, getWidth() / 2, getHeight() / 2);
-        setImageMatrix(matrix);
-        mCurScale = mInitScale;
+        slowScale(mInitScale);
     }
 
-    private boolean isNeedCheckBorder;
-
     protected void checkBorder() {
-        if (!isNeedCheckBorder) return;
         RectF rectF = getMatrixRectF();
 
 //        Log.e("main", rectF.toString());
@@ -175,7 +167,34 @@ public class ScaleImageView extends ImageView {
 
         matrix.postTranslate(dx, dy);
         setImageMatrix(matrix);
-        isNeedCheckBorder = false;
+        //slowTranslate(dx,dy);
+    }
+
+    protected float[] checkScroll(float distanceX, float distanceY) {
+        RectF rectF = getMatrixRectF();
+        float width = getWidth();
+        float height = getHeight();
+        float damp = 4;
+        if (rectF.width() >= width) {
+            if (rectF.left > 0) {
+                distanceX = distanceX / damp;
+            }
+            if (rectF.right < width) {
+                distanceX = distanceX / damp;
+            }
+        }
+        if (rectF.height() >= height) {
+            if (rectF.top > 0) {
+                distanceY = distanceY / damp;
+            }
+            if (rectF.bottom < height) {
+                distanceY = distanceY / damp;
+            }
+        }
+        float[] result = new float[2];
+        result[0] = distanceX;
+        result[1] = distanceY;
+        return result;
     }
 
     public RectF getMatrixRectF() {
@@ -186,18 +205,31 @@ public class ScaleImageView extends ImageView {
         return rectF;
     }
 
+    private float getCurScale() {
+        float src[] = new float[9];
+        matrix.getValues(src);
+        return src[Matrix.MSCALE_X];
+    }
+
+    private float[] getCurTranslate() {
+        float src[] = new float[9];
+        float[] result = new float[2];
+        matrix.getValues(src);
+        result[0] = src[Matrix.MTRANS_X];
+        result[1] = src[Matrix.MTRANS_Y];
+        return result;
+    }
 
     private class TapCallback extends GestureDetector.SimpleOnGestureListener {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
             isDoubleTap = true;
-            isNeedCheckBorder = true;
-            if (mCurScale < mCenterScale) {
-                float factor = mCenterScale / mCurScale;
-                matrix.postScale(factor, factor, getWidth() / 2, getHeight() / 2);
-                setImageMatrix(matrix);
-                mCurScale = mCenterScale;
+            float curScale = getCurScale();
+            if (curScale < mCenterScale) {
+                mScaleFocus[0] = e.getX();
+                mScaleFocus[1] = e.getY();
+                slowScale(mCenterScale);
             } else {
                 resetScale();
             }
@@ -222,7 +254,7 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (isScale) return true;
+            if (isScale) return true;//滑动的时候 如果在缩放 则 无操作
             ScaleImageView.this.onScroll(distanceX, distanceY);
             return true;
         }
@@ -254,14 +286,17 @@ public class ScaleImageView extends ImageView {
     private boolean isInitScale;
 
     protected void onScroll(float distanceX, float distanceY) {
-        isNeedCheckBorder = true;
         checkIntercept(distanceX);
-        if (mCurScale == mInitScale) {
+        if (getCurScale() == mInitScale) {
             distanceY = 0;
         }
-        matrix.postTranslate(-distanceX, -distanceY);
+        float[] target = checkScroll(distanceX, distanceY);
+        matrix.postTranslate(-target[0], -target[1]);
         setImageMatrix(matrix);
+        checkScrollBorder = true;
     }
+
+    private boolean checkScrollBorder;
 
     private void checkIntercept(float dx) {
         RectF rectF = getMatrixRectF();
@@ -286,18 +321,38 @@ public class ScaleImageView extends ImageView {
 
 
     private void slowScale(float target) {
-        //float cur = mCurScale;
-        ValueAnimator animator = new ValueAnimator();
-        animator.setFloatValues(mCurScale, target);
+
+        ValueAnimator animator = ValueAnimator.ofFloat(getCurScale(), target);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                float cur = (float) animation.getAnimatedValue();
-                matrix.postScale(cur, cur, getWidth() / 2, getHeight() / 2);
+                float curTarget = (float) animation.getAnimatedValue();
+                float factor = curTarget / getCurScale();
+                matrix.postScale(factor, factor, mScaleFocus[0], mScaleFocus[1]);
+                setImageMatrix(matrix);
+                if (animation.getAnimatedFraction() == 1) {
+                    checkBorder();
+                }
+            }
+        });
+        animator.setDuration(200).start();
+    }
+
+    private void slowTranslate(final float targetX, final float targetY) {
+
+        ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float curTarget = (float) animation.getAnimatedValue();
+                float curX = getCurTranslate()[0];
+                float curY = getCurTranslate()[1];
+                float curTargetX = targetX * curTarget;
+                float curTargetY = targetY * curTarget;
+                matrix.postTranslate(curTargetX - curX, curTargetY - curY);
                 setImageMatrix(matrix);
             }
         });
-        mCurScale = target;
         animator.setDuration(200).start();
     }
 
@@ -328,7 +383,6 @@ public class ScaleImageView extends ImageView {
             float scaleH = (float) height / (float) dh;
             mInitScale = Math.min(scaleH, scaleW);
         }
-        mCurScale = mInitScale;
         mMaxScale = mInitScale * 4;
         mCenterScale = mInitScale * 2;
         matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
@@ -340,5 +394,12 @@ public class ScaleImageView extends ImageView {
     public void rotate(float degree) {
         matrix.postRotate(degree, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
+    }
+
+    //摆正剪切的位置
+    public void setClipPosition(float scale) {
+        mScaleFocus[0] = getWidth() / 2;
+        mScaleFocus[1] = getHeight() / 2;
+        slowScale(scale);
     }
 }

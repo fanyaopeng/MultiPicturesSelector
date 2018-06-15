@@ -62,10 +62,10 @@ public class PreviewActivity extends Activity {
         findViewById(R.id.tv_edit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
-//                intent.putExtra("path", paths.get(vp.getCurrentItem()));
-//                startActivityForResult(intent, requestEdit);
-                startClip(paths.get(vp.getCurrentItem()));
+                Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
+                intent.putExtra("path", paths.get(vp.getCurrentItem()));
+                startActivityForResult(intent, requestEdit);
+                //startClip(paths.get(vp.getCurrentItem()));
             }
         });
     }

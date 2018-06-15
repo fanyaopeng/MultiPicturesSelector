@@ -92,14 +92,8 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
     }
 
     public void in() {
-        mImage.animate().scaleX(0.8f).scaleY(0.8f).translationYBy(-mOperationHeight).setDuration(200).start();
-
-        FrameLayout.LayoutParams shapeParams = (FrameLayout.LayoutParams) mShape.getLayoutParams();
-
-        shapeParams.bottomMargin = mOperationHeight;
-        mShape.requestLayout();
+        mImage.setClipPosition(mScale);
         mShape.setVisibility(View.VISIBLE);
-
         isIn = true;
         mClipRoot.setVisibility(VISIBLE);
         if (mPosChangeListener != null) {
@@ -109,13 +103,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
     }
 
     public void out() {
-        mImage.animate().scaleX(1.0f).scaleY(1.0f).translationYBy(mOperationHeight).setDuration(200).start();
-
-        FrameLayout.LayoutParams shapeParams = (FrameLayout.LayoutParams) mShape.getLayoutParams();
-        shapeParams.bottomMargin = 0;
-        mShape.requestLayout();
-        mShape.setVisibility(View.GONE);
-
+        mImage.setClipPosition(1.0f);
         isIn = false;
         mClipRoot.setVisibility(GONE);
 

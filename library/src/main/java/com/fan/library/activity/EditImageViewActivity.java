@@ -35,7 +35,7 @@ public class EditImageViewActivity extends Activity implements View.OnClickListe
         mAllOperation = findViewById(R.id.rel_all_operation);
         mPath = getIntent().getStringExtra("path");
         mEditLayout.setPath(mPath);
-        findViewById(R.id.img_clip).setOnClickListener(this);
+        findViewById(R.id.tv_clip).setOnClickListener(this);
 
         findViewById(R.id.tv_edit).setOnClickListener(this);
         mEditLayout.setOnImagePosChangeListener(this);
@@ -44,7 +44,7 @@ public class EditImageViewActivity extends Activity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.img_clip) {
+        if (v.getId() == R.id.tv_clip) {
             //img.rotate(-90);
             mEditLayout.togglePos();
             mEditLayout.setStatus(EditableLayout.Status.clip);

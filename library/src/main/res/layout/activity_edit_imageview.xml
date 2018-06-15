@@ -37,13 +37,15 @@
                 android:text="涂鸦"
                 android:textColor="@android:color/white" />
 
-            <ImageView
-                android:id="@+id/img_clip"
+            <TextView
+                android:id="@+id/tv_clip"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="12dp"
-                android:src="@mipmap/ic_clip" />
+                android:gravity="center"
+                android:text="裁剪"
+                android:textColor="@android:color/white" />
         </RelativeLayout>
     </LinearLayout>
 </FrameLayout>
