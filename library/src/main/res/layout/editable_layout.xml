@@ -64,19 +64,6 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="44dp"
-            android:paddingLeft="12dp">
-
-            <ImageView
-                android:id="@+id/img_rotate"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_centerVertical="true"
-                android:src="@mipmap/ic_rotate" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
             android:paddingLeft="12dp"
             android:paddingRight="12dp">
 

@@ -56,7 +56,6 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         mColorSelector = findViewById(R.id.color_selector);
         findViewById(R.id.img_clip_complete).setOnClickListener(this);
         findViewById(R.id.img_clip_close).setOnClickListener(this);
-        findViewById(R.id.img_rotate).setOnClickListener(this);
         findViewById(R.id.tv_complete).setOnClickListener(this);
 
         setEditColor(mColorSelector.getColor());
@@ -106,7 +105,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         mImage.setClipPosition(1.0f);
         isIn = false;
         mClipRoot.setVisibility(GONE);
-
+        mShape.setVisibility(View.GONE);
         if (mPosChangeListener != null) {
             mPosChangeListener.onPosChange(isIn);
         }
@@ -200,10 +199,6 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         }
         if (v.getId() == R.id.img_clip_close) {
             out();
-        }
-        if (v.getId() == R.id.img_rotate) {
-//            img.rotate(-90);
-//            mShape.rotate(90);
         }
         if (v.getId() == R.id.tv_complete) {
             process();
