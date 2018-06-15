@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -14,6 +15,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -407,7 +409,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 params.width = mItemSize;
                 params.height = mItemSize;
                 ImageView img = holder.img;
-                final String path = mSelectDirsPictures.get(position-1).getPath();
+                final String path = mSelectDirsPictures.get(position - 1).getPath();
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
                         path, img, mItemSize, mItemSize));
                 holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
@@ -443,6 +445,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 });
             }
         }
+
 
         @Override
         public int getItemCount() {
@@ -487,7 +490,7 @@ public class MultiPicturesSelectorActivity extends Activity {
         cameraPath = getExternalCacheDir() + File.separator + System.currentTimeMillis() + ".png";
         File target = new File(cameraPath);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        //intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             intent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(MultiPicturesSelectorActivity.this,
                     getPackageName(), target));

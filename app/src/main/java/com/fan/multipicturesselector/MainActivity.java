@@ -4,9 +4,13 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +22,7 @@ import android.widget.ImageView;
 import com.fan.library.activity.MultiPicturesSelectorActivity;
 import com.fan.library.utils.Utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,17 +65,20 @@ public class MainActivity extends AppCompatActivity {
             if (paths != null) paths.clear();
             paths = data.getStringArrayListExtra("paths");
             imageViews.clear();
-            for (String p : paths) {
+            for (final String p : paths) {
                 ImageView imageView = new ImageView(MainActivity.this);
                 Bitmap result = Utils.compress(p, MainActivity.this.getResources().getDisplayMetrics().widthPixels, vp.getHeight());
                 imageView.setImageBitmap(result);
                 imageViews.add(imageView);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
             }
             if (imageViews.size() != 0)
                 vp.setAdapter(new ImageAdapter());
         }
     }
+
+
 
     private List<ImageView> imageViews = new ArrayList<>();
 

@@ -3,9 +3,13 @@ package com.fan.library.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -21,6 +25,7 @@ import com.fan.library.view.EditImageView;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,11 +62,36 @@ public class PreviewActivity extends Activity {
         findViewById(R.id.tv_edit).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
-                intent.putExtra("path", paths.get(vp.getCurrentItem()));
-                startActivityForResult(intent, requestEdit);
+//                Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
+//                intent.putExtra("path", paths.get(vp.getCurrentItem()));
+//                startActivityForResult(intent, requestEdit);
+                startClip(paths.get(vp.getCurrentItem()));
             }
         });
+    }
+
+    private void startClip(String path) {
+        Intent intent = new Intent("com.android.camera.action.CROP");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.setDataAndType(FileProvider.getUriForFile(this, getPackageName(), new File(path)), "image/*");
+        } else {
+            intent.setDataAndType(Uri.fromFile(new File(path)), "image/*");
+        }
+        intent.putExtra("crop", "true");
+        intent.putExtra("scale", true);
+
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+
+        intent.putExtra("outputX", 300);
+        intent.putExtra("outputY", 300);
+
+        intent.putExtra("return-data", false);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(getExternalCacheDir() + "test.jpg")));
+        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
+        intent.putExtra("noFaceDetection", true); // no face detection
+        startActivityForResult(intent, 1);
     }
 
     private int requestEdit = 1;
