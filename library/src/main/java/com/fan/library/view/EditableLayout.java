@@ -1,21 +1,16 @@
 package com.fan.library.view;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.fan.library.R;
@@ -31,8 +26,6 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
     private ClipShapeView mShape;
     private boolean isIn;
 
-    private int mOperationHeight;
-    private float mScale = 0.8f;
 
     private LinearLayout mClipRoot;
     private RelativeLayout mTop;
@@ -48,8 +41,6 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         mImage = findViewById(R.id.image);
         mShape = findViewById(R.id.shape);
 
-
-        mOperationHeight = Utils.dp2px(context, 44);
         mClipRoot = findViewById(R.id.clip_root);
         mTop = findViewById(R.id.rel_top);
         mTop.setAlpha(0);
@@ -80,19 +71,14 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         super.onLayout(changed, left, top, right, bottom);
         if (isInit) return;
         mImage.setImageBitmap(Utils.compress(mPath, mImage.getWidth(), mImage.getHeight()));
-        RectF rectF = mImage.getMatrixRectF();
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mShape.getLayoutParams();
-        params.width = (int) (rectF.width() * mScale + mShape.getPadding());
-        params.height = (int) (rectF.height() * mScale + mShape.getPadding());
-        params.gravity = Gravity.CENTER;
-        mShape.requestLayout();
         mShape.setOnScrollStopListener(this);
         isInit = true;
     }
 
     public void in() {
-        mImage.setClipPosition(mScale);
         mShape.setVisibility(View.VISIBLE);
+        mShape.setImage(mImage);
+
         isIn = true;
         mClipRoot.setVisibility(VISIBLE);
         if (mPosChangeListener != null) {
@@ -102,10 +88,10 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
     }
 
     public void out() {
-        mImage.setClipPosition(1.0f);
+        mShape.reset(mImage);
         isIn = false;
         mClipRoot.setVisibility(GONE);
-        mShape.setVisibility(View.GONE);
+        mShape.setVisibility(View.INVISIBLE);
         if (mPosChangeListener != null) {
             mPosChangeListener.onPosChange(isIn);
         }
@@ -138,13 +124,10 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
 
     private void clip() {
         RectF rectF = mShape.getCurRange();
-        if (rectF == null) {
-            rectF = mImage.getMatrixRectF();
-        }
-        int left = (int) (rectF.left / mScale);
-        int top = (int) (rectF.top / mScale);
-        int right = (int) (rectF.right / mScale);
-        int bottom = (int) (rectF.bottom / mScale);
+        int left = (int) (rectF.left);
+        int top = (int) (rectF.top);
+        int right = (int) (rectF.right);
+        int bottom = (int) (rectF.bottom);
         Rect rect = new Rect(left, top, right, bottom);
         Bitmap bitmap = mImage.clipImage(rect);
         int fileNameStart = mPath.lastIndexOf(File.separator);

@@ -3,16 +3,11 @@ package com.fan.library.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -21,14 +16,16 @@ import android.widget.TextView;
 
 import com.fan.library.R;
 import com.fan.library.utils.Utils;
-import com.fan.library.view.EditImageView;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 已知  编辑后  原来的图片 不会消失
+ *  已知  剪切的时候的  经过缩放后 越界处理 不正确
+ */
 public class PreviewActivity extends Activity {
     private ViewPager vp;
     private List<String> paths;
@@ -70,30 +67,6 @@ public class PreviewActivity extends Activity {
         });
     }
 
-    private void startClip(String path) {
-        Intent intent = new Intent("com.android.camera.action.CROP");
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            intent.setDataAndType(FileProvider.getUriForFile(this, getPackageName(), new File(path)), "image/*");
-        } else {
-            intent.setDataAndType(Uri.fromFile(new File(path)), "image/*");
-        }
-        intent.putExtra("crop", "true");
-        intent.putExtra("scale", true);
-
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
-
-        intent.putExtra("outputX", 300);
-        intent.putExtra("outputY", 300);
-
-        intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(new File(getExternalCacheDir() + "test.jpg")));
-        intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString());
-        intent.putExtra("noFaceDetection", true); // no face detection
-        startActivityForResult(intent, 1);
-    }
-
     private int requestEdit = 1;
 
     @Override
@@ -106,6 +79,7 @@ public class PreviewActivity extends Activity {
                 ScaleImageView image = (ScaleImageView) imageViews.get(vp.getCurrentItem());
                 Bitmap result = Utils.compress(path, vp.getWidth(), vp.getHeight());
                 image.setImageBitmap(result);
+                //imageViews.set(vp.getCurrentItem(), image);
                 vp.getAdapter().notifyDataSetChanged();
             }
         }
@@ -115,18 +89,7 @@ public class PreviewActivity extends Activity {
         imageViews.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
-                ScaleImageView imageView;
-//                if (Utils.isLongImage(PreviewActivity.this, p)) {
-//                    // Bitmap result = Utils.compress(p, vp.getWidth(), Integer.MAX_VALUE);
-//                    imageView = new LargeScaleImageView(this);
-//                    LargeScaleImageView img = (LargeScaleImageView) imageView;
-//                    img.setImagePath(p);
-//                } else {
-//                    imageView = new ScaleImageView(this);
-//                    Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
-//                    imageView.setImageBitmap(result);
-//                }
-                imageView = new ScaleImageView(this);
+                ScaleImageView imageView = new ScaleImageView(this);
                 Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
                 imageView.setImageBitmap(result);
                 imageViews.add(imageView);

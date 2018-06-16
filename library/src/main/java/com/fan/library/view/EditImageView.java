@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.fan.library.utils.Utils;
@@ -19,6 +21,7 @@ public class EditImageView extends ScaleImageView {
     private float mCurX;
     private float mCurY;
     private List<PathInfo> mPaths;
+    private RectF mInitRange;
 
     public EditImageView(Context context) {
         this(context, null);
@@ -54,6 +57,47 @@ public class EditImageView extends ScaleImageView {
         mCurY -= distanceY;
         invalidate();
     }
+
+    public void setRange(RectF rectF) {
+        mInitRange = new RectF(rectF);
+    }
+
+    @Override
+    protected void checkBorder() {
+        //super.checkBorder();
+        RectF rectF = getMatrixRectF();
+        float dx = 0;
+        float dy = 0;
+        float width = getWidth();
+        float height = getHeight();
+        if (rectF.width() >= width) {
+            if (rectF.left > mInitRange.left) {
+                dx = mInitRange.left - rectF.left;
+            }
+            if (rectF.right < mInitRange.right) {
+                dx = mInitRange.right - rectF.right;
+            }
+        }
+        if (rectF.height() >= height) {
+            if (rectF.top > mInitRange.top) {
+                dy = mInitRange.top - rectF.top;
+            }
+            if (rectF.bottom < mInitRange.bottom) {
+                dy = mInitRange.bottom - rectF.bottom;
+            }
+        }
+
+        if (rectF.width() < width) {
+            dx = (mInitRange.left + mInitRange.right) / 2f + rectF.width() / 2f - rectF.right;
+        }
+        if (rectF.height() < height) {
+            dy = (mInitRange.bottom + mInitRange.top) / 2f + rectF.height() / 2f - rectF.bottom;
+        }
+
+        matrix.postTranslate(dx, dy);
+        setImageMatrix(matrix);
+    }
+
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -104,4 +148,24 @@ public class EditImageView extends ScaleImageView {
     private PathInfo getLastPath() {
         return mPaths.get(mPaths.size() - 1);
     }
+
+    public void resetClipPosition(float scale) {
+        mScaleFocus[0] = getWidth() / 2;
+        mScaleFocus[1] = getHeight() / 2;
+        slowScale(getCurScale() / scale);
+        mInitScale = scale;
+        mMaxScale = mInitScale * 4;
+        mCenterScale = mInitScale * 2;
+    }
+
+    //剪切的位置
+    public void setClipPosition(float scale) {
+        mScaleFocus[0] = getWidth() / 2;
+        mScaleFocus[1] = getHeight() / 2;
+        slowScale(getCurScale() * scale);
+        mInitScale = getCurScale() * scale;
+        mMaxScale = mInitScale * 4;
+        mCenterScale = mInitScale * 2;
+    }
+
 }

@@ -20,12 +20,12 @@ import android.widget.Scroller;
 public class ScaleImageView extends ImageView {
     protected Matrix matrix;
     private GestureDetector mGestureDetector;
-    private float mMaxScale = 4;
-    private float mCenterScale = 2;
-    private float mInitScale = 1.0f;
+    protected float mMaxScale = 4;
+    protected float mCenterScale = 2;
+    protected float mInitScale = 1.0f;
     private ScaleGestureDetector mScaleGestureDetector;
     private Scroller mScroller;
-    private float[] mScaleFocus = new float[2];
+    protected float[] mScaleFocus = new float[2];
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -73,19 +73,6 @@ public class ScaleImageView extends ImageView {
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
-        RectF rectF = getMatrixRectF();
-        if (rect.left < rectF.left) {
-            rect.left = (int) rectF.left;
-        }
-        if (rect.top < rectF.top) {
-            rect.top = (int) rectF.top;
-        }
-        if (rect.right > rectF.right) {
-            rect.right = (int) rectF.right;
-        }
-        if (rect.bottom > rectF.bottom) {
-            rect.bottom = (int) rectF.bottom;
-        }
         return Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height());
     }
 
@@ -191,6 +178,12 @@ public class ScaleImageView extends ImageView {
                 distanceY = distanceY / damp;
             }
         }
+        if (rectF.width() < width) {
+            distanceX = distanceX / damp;
+        }
+        if (rectF.height() < height) {
+            distanceY = distanceY / damp;
+        }
         float[] result = new float[2];
         result[0] = distanceX;
         result[1] = distanceY;
@@ -205,7 +198,7 @@ public class ScaleImageView extends ImageView {
         return rectF;
     }
 
-    private float getCurScale() {
+    protected float getCurScale() {
         float src[] = new float[9];
         matrix.getValues(src);
         return src[Matrix.MSCALE_X];
@@ -320,7 +313,7 @@ public class ScaleImageView extends ImageView {
     }
 
 
-    private void slowScale(float target) {
+    protected void slowScale(float target) {
 
         ValueAnimator animator = ValueAnimator.ofFloat(getCurScale(), target);
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -362,6 +355,12 @@ public class ScaleImageView extends ImageView {
         init();
     }
 
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+        matrix.reset();
+        isInitScale = false;
+        super.setImageBitmap(bm);
+    }
 
     private void init() {
         if (isInitScale) return;
@@ -373,16 +372,18 @@ public class ScaleImageView extends ImageView {
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
         Log.e("main", "dw  " + dw + "dh  " + dh);
-        if (height > dh && width > dw) {
-            float scaleW = (float) width / (float) dw;
-            float scaleH = (float) height / (float) dh;
-            mInitScale = Math.min(scaleH, scaleW);
-        }
-        if (dh > height && dw > width) {
-            float scaleW = (float) width / (float) dw;
-            float scaleH = (float) height / (float) dh;
-            mInitScale = Math.min(scaleH, scaleW);
-        }
+//        if (height > dh && width > dw) {
+//            float scaleW = (float) width / (float) dw;
+//            float scaleH = (float) height / (float) dh;
+//            mInitScale = Math.min(scaleH, scaleW);
+//        }
+//        if (dh > height && dw > width) {
+//
+//        }
+        float scaleW = (float) width / (float) dw;
+        float scaleH = (float) height / (float) dh;
+
+        mInitScale = Math.min(scaleH, scaleW);
         mMaxScale = mInitScale * 4;
         mCenterScale = mInitScale * 2;
         matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
@@ -396,10 +397,4 @@ public class ScaleImageView extends ImageView {
         setImageMatrix(matrix);
     }
 
-    //摆正剪切的位置
-    public void setClipPosition(float scale) {
-        mScaleFocus[0] = getWidth() / 2;
-        mScaleFocus[1] = getHeight() / 2;
-        slowScale(scale);
-    }
 }
