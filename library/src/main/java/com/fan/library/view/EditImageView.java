@@ -65,6 +65,7 @@ public class EditImageView extends ScaleImageView {
     @Override
     protected void checkBorder() {
         //super.checkBorder();
+        if (mInitRange == null) return;
         RectF rectF = getMatrixRectF();
         float dx = 0;
         float dy = 0;
@@ -149,7 +150,9 @@ public class EditImageView extends ScaleImageView {
         return mPaths.get(mPaths.size() - 1);
     }
 
+
     public void resetClipPosition(float scale) {
+
         mScaleFocus[0] = getWidth() / 2;
         mScaleFocus[1] = getHeight() / 2;
         slowScale(getCurScale() / scale);

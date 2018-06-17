@@ -128,7 +128,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 if (mCheckPaths.size() == 0) return;
                 Intent intent = new Intent(MultiPicturesSelectorActivity.this, PreviewActivity.class);
                 intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPaths);
-                startActivity(intent);
+                startActivityForResult(intent, 0);
             }
         });
         tvCurDir = findViewById(R.id.tv_type);
@@ -506,6 +506,19 @@ public class MultiPicturesSelectorActivity extends Activity {
         if (requestCode == 1 && resultCode == RESULT_OK) {
             mCheckPaths.add(cameraPath);
             tvComplete.performClick();
+        }
+        //预览图片
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            ArrayList<String> paths = data.getStringArrayListExtra("paths");
+//            for (int i = 0; i < paths.size(); i++) {
+//                String p = paths.get(i);
+//                if (!p.equals(mCheckPaths.get(i))) {
+//
+//                }
+//            }
+            mCheckPaths.clear();
+            mCheckPaths.addAll(paths);
+            findViewById(R.id.tv_complete).performClick();
         }
     }
 

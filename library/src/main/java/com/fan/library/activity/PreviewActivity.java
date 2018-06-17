@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * 已知  编辑后  原来的图片 不会消失
- *  已知  剪切的时候的  经过缩放后 越界处理 不正确
+ * 已知  剪切的时候的  经过缩放后 越界处理 不正确
  */
 public class PreviewActivity extends Activity {
     private ViewPager vp;
@@ -62,7 +62,15 @@ public class PreviewActivity extends Activity {
                 Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
                 intent.putExtra("path", paths.get(vp.getCurrentItem()));
                 startActivityForResult(intent, requestEdit);
-                //startClip(paths.get(vp.getCurrentItem()));
+            }
+        });
+        findViewById(R.id.tv_complete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.putStringArrayListExtra("paths", (ArrayList<String>) paths);
+                setResult(RESULT_OK, intent);
+                finish();
             }
         });
     }
