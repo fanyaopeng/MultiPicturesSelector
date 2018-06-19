@@ -124,6 +124,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
 
     private void clip() {
         RectF rectF = mShape.getCurRange();
+        if (rectF == null) rectF = mImage.getMatrixRectF();
         int left = (int) (rectF.left);
         int top = (int) (rectF.top);
         int right = (int) (rectF.right);
