@@ -14,6 +14,7 @@
             android:layout_width="44dp"
             android:layout_height="20dp"
             android:layout_centerVertical="true"
+            android:onClick="back"
             android:src="@mipmap/ic_back" />
 
         <View
@@ -112,11 +113,11 @@
             android:src="@mipmap/ic_type_extend" />
 
         <LinearLayout
-            android:id="@+id/ll_preview"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true">
+            android:layout_centerVertical="true"
+            android:onClick="preview">
 
             <TextView
                 android:layout_width="wrap_content"

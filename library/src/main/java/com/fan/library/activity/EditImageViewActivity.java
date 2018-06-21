@@ -10,8 +10,10 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.fan.library.R;
+import com.fan.library.utils.Config;
 import com.fan.library.view.EditableLayout;
 import com.fan.library.view.ColorSelectView;
 
@@ -35,11 +37,19 @@ public class EditImageViewActivity extends Activity implements View.OnClickListe
         mAllOperation = findViewById(R.id.rel_all_operation);
         mPath = getIntent().getStringExtra("path");
         mEditLayout.setPath(mPath);
-        findViewById(R.id.tv_clip).setOnClickListener(this);
-
-        findViewById(R.id.tv_edit).setOnClickListener(this);
+        TextView tvClip = findViewById(R.id.tv_clip);
+        tvClip.setOnClickListener(this);
+        TextView tvEdit = findViewById(R.id.tv_edit);
+        tvEdit.setOnClickListener(this);
         mEditLayout.setOnImagePosChangeListener(this);
         mEditLayout.setOnProcessListener(this);
+        Config config = Config.get();
+        if (!config.isOpenClip) {
+            tvClip.setVisibility(View.GONE);
+        }
+        if (!config.isOpenEdit) {
+            tvEdit.setVisibility(View.GONE);
+        }
     }
 
     @Override

@@ -4,13 +4,9 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -19,10 +15,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.fan.library.utils.Config;
 import com.fan.library.activity.MultiPicturesSelectorActivity;
 import com.fan.library.utils.Utils;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +34,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void start(View view) {
-        String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
-        if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        Config config = Config.get();
+        config.setMaxNum(5);
+        config.setMinMum(1);
+        config.setOpenEdit(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+            if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{permission}, 0);
+            } else {
+                startActivityForResult(new Intent(this, MultiPicturesSelectorActivity.class), 0);
             }
         } else {
             startActivityForResult(new Intent(this, MultiPicturesSelectorActivity.class), 0);
@@ -77,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
                 vp.setAdapter(new ImageAdapter());
         }
     }
-
 
 
     private List<ImageView> imageViews = new ArrayList<>();

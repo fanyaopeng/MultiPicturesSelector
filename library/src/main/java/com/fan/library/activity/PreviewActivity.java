@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fan.library.R;
+import com.fan.library.utils.Config;
 import com.fan.library.utils.Utils;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
@@ -56,23 +57,23 @@ public class PreviewActivity extends Activity {
         mBottomBar = findViewById(R.id.bottom_bar);
         mBottomBar.setAlpha(0.8f);
         tvTitle = findViewById(R.id.title);
-        findViewById(R.id.tv_edit).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
-                intent.putExtra("path", paths.get(vp.getCurrentItem()));
-                startActivityForResult(intent, requestEdit);
-            }
-        });
-        findViewById(R.id.tv_complete).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.putStringArrayListExtra("paths", (ArrayList<String>) paths);
-                setResult(RESULT_OK, intent);
-                finish();
-            }
-        });
+        Config config = Config.get();
+        if (!config.isOpenClip && !config.isOpenEdit) {
+            mBottomBar.setVisibility(View.GONE);
+        }
+    }
+
+    public void complete(View view) {
+        Intent intent = new Intent();
+        intent.putStringArrayListExtra("paths", (ArrayList<String>) paths);
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    public void edit(View view) {
+        Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
+        intent.putExtra("path", paths.get(vp.getCurrentItem()));
+        startActivityForResult(intent, requestEdit);
     }
 
     private int requestEdit = 1;

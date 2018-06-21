@@ -133,7 +133,9 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         Bitmap bitmap = mImage.clipImage(rect);
         int fileNameStart = mPath.lastIndexOf(File.separator);
         int fileNameEnd = mPath.lastIndexOf(".");
-        File dest = new File(getContext().getExternalCacheDir() + File.separator + mPath.substring(fileNameStart + 1, fileNameEnd) + "-clip.png");
+        File dir = new File(getContext().getExternalCacheDir() + File.separator + "image");
+        if (!dir.exists()) dir.mkdir();
+        File dest = new File(dir + File.separator + mPath.substring(fileNameStart + 1, fileNameEnd) + "-clip.png");
         try {
             FileOutputStream os = new FileOutputStream(dest);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);

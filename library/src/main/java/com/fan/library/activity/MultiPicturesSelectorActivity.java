@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -15,18 +14,15 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +34,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fan.library.utils.Config;
 import com.fan.library.utils.DisplayImageTask;
 import com.fan.library.R;
 import com.fan.library.utils.Utils;
@@ -66,11 +63,10 @@ public class MultiPicturesSelectorActivity extends Activity {
     private List<String> mCheckPaths = new ArrayList<>();
     private TextView tvPreviewNum;
     private RecyclerView mDirList;
-    private TextView mCurDir;
     private LinearLayout mShadow;
     private List<ImageInfo> mSelectDirsPictures = new ArrayList<>();
     private TextView tvCurDir;
-    private int mMaxNum = 9;
+    private int mMaxNum;
     private TextView tvComplete;
 
     @Override
@@ -92,7 +88,6 @@ public class MultiPicturesSelectorActivity extends Activity {
         mService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         mItemMargin = Utils.dp2px(this, 2);
         mItemSize = (getWidth() - mItemMargin * 5) / 4;
-        mCurDir = findViewById(R.id.tv_type);
         tvPreviewNum = findViewById(R.id.tv_preview_num);
         mShadow = findViewById(R.id.shadow);
         mContainer = findViewById(R.id.rel_container);
@@ -105,39 +100,38 @@ public class MultiPicturesSelectorActivity extends Activity {
                 }
             }
         });
-        findViewById(R.id.ic_back).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
         tvComplete = findViewById(R.id.tv_complete);
-
         tvComplete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (mCheckPaths.size() < Config.get().minMum) {
+                    Toast.makeText(MultiPicturesSelectorActivity.this, String.format("请至少选择%d张图片", Config.get().minMum), Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intent = new Intent();
                 intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPaths);
                 setResult(RESULT_OK, intent);
                 finish();
             }
         });
-        findViewById(R.id.ll_preview).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mCheckPaths.size() == 0) return;
-                Intent intent = new Intent(MultiPicturesSelectorActivity.this, PreviewActivity.class);
-                intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPaths);
-                startActivityForResult(intent, 0);
-            }
-        });
         tvCurDir = findViewById(R.id.tv_type);
         tvCurDir.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SelectType();
+                selectType();
             }
         });
+    }
+
+    public void back(View view) {
+        onBackPressed();
+    }
+
+    public void preview(View view) {
+        if (mCheckPaths.size() == 0) return;
+        Intent intent = new Intent(MultiPicturesSelectorActivity.this, PreviewActivity.class);
+        intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPaths);
+        startActivityForResult(intent, 0);
     }
 
     private int getWidth() {
@@ -150,12 +144,13 @@ public class MultiPicturesSelectorActivity extends Activity {
 
     private void init() {
         mService.submit(new ReadTask());
+        mMaxNum = Config.get().maxNum;
     }
 
     private RelativeLayout mContainer;
 
 
-    private void SelectType() {
+    private void selectType() {
 
         if (mDirList.getTranslationY() == 0) {
             //目前显示中
@@ -249,7 +244,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                 @Override
                 public void onClick(View v) {
                     animHide();
-                    TextView tv = mCurDir;
+                    TextView tv = tvCurDir;
                     if (holder.getItemViewType() == -1) {
                         if (tv.getText().equals(type_all)) return;
                         tv.setText(type_all);

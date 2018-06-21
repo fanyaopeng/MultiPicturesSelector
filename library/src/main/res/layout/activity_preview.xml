@@ -46,7 +46,7 @@
             android:textSize="18sp" />
 
         <TextView
-            android:id="@+id/tv_complete"
+            android:onClick="complete"
             android:layout_width="wrap_content"
             android:layout_height="27dp"
             android:layout_alignParentRight="true"
@@ -70,6 +70,7 @@
         android:paddingLeft="12dp">
 
         <TextView
+            android:onClick="edit"
             android:id="@+id/tv_edit"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
