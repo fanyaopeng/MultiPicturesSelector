@@ -28,3 +28,7 @@
 ![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230948.jpg)
 
 ![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230956.jpg)
+
+## dependencies {
+   	        implementation 'com.github.fanyaopeng:MultiPicturesSelector:v1.0.0'
+   	}
