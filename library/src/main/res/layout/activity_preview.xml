@@ -103,7 +103,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_marginRight="10dp"
                 android:layout_toLeftOf="@+id/ck_select_cur"
                 android:text="选择"
                 android:textColor="@android:color/white" />
@@ -120,8 +119,7 @@
                     android:id="@+id/ck"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:src="@mipmap/ic_checked" />
+                    android:layout_gravity="center" />
             </FrameLayout>
 
         </RelativeLayout>

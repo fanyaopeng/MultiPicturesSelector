@@ -311,6 +311,9 @@ public class MultiPicturesSelectorActivity extends Activity {
             while (cursor.moveToNext()) {
                 int date = cursor.getInt(1);
                 String path = cursor.getString(0);
+                if (!Utils.isPicture(path)) {
+                    continue;
+                }
                 ImageInfo info = new ImageInfo(date, path);
                 mAllPictures.add(info);
 

@@ -10,6 +10,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,7 @@ public class PreviewActivity extends Activity {
     private TextView tvTitle;
     private RecyclerView mThumbList;
     private TextView tvEdit;
-    private List<String> mCheckPath;
+    private List<Boolean> mCheckPath;
     private CheckImageView mCheckView;
 
     @Override
@@ -56,7 +57,9 @@ public class PreviewActivity extends Activity {
         }
         paths = getIntent().getStringArrayListExtra("paths");
         mCheckPath = new ArrayList<>();
-        mCheckPath.addAll(paths);
+        for (String s : paths) {
+            mCheckPath.add(true);
+        }
         initView();
         initThumb();
         mPreviewVp.post(new Runnable() {
@@ -76,6 +79,7 @@ public class PreviewActivity extends Activity {
         tvTitle = findViewById(R.id.title);
         tvEdit = findViewById(R.id.tv_edit);
         mCheckView = findViewById(R.id.ck);
+        mCheckView.setChecked(true);
         Config config = Config.get();
         if (!config.isOpenClip && !config.isOpenEdit) {
             mBottomBar.setVisibility(View.GONE);
@@ -84,7 +88,12 @@ public class PreviewActivity extends Activity {
 
     public void complete(View view) {
         Intent intent = new Intent();
-        intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPath);
+        for (int i = 0; i < mCheckPath.size(); i++) {
+            if (!mCheckPath.get(i)) {
+                paths.remove(i);
+            }
+        }
+        intent.putStringArrayListExtra("paths", (ArrayList<String>) paths);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -109,7 +118,7 @@ public class PreviewActivity extends Activity {
                 image.setImageBitmap(result);
                 //mPreViewImages.set(mPreviewVp.getCurrentItem(), image);
                 mPreviewVp.getAdapter().notifyDataSetChanged();
-                mThumbList.getAdapter().notifyDataSetChanged();
+                mThumbList.getAdapter().notifyItemChanged(mPreviewVp.getCurrentItem());
             }
         }
     }
@@ -119,8 +128,8 @@ public class PreviewActivity extends Activity {
         for (String p : paths) {
             if (!Utils.isGif(p)) {
                 ScaleImageView imageView = new ScaleImageView(this);
-                Bitmap result = Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight());
-                imageView.setImageBitmap(result);
+                service.execute(new DisplayImageTask(this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                //imageView.setImageBitmap(result);
                 mPreViewImages.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);
@@ -148,7 +157,8 @@ public class PreviewActivity extends Activity {
                 } else {
                     tvEdit.setVisibility(View.VISIBLE);
                 }
-                mCheckView.setChecked(mCheckPath.contains(paths.get(position)));
+                mCheckView.setChecked(mCheckPath.get(position));
+                mThumbList.scrollToPosition(position);
             }
 
             @Override
@@ -161,13 +171,7 @@ public class PreviewActivity extends Activity {
     public void onCheckClick(View view) {
         CheckImageView ck = (CheckImageView) ((ViewGroup) view).getChildAt(0);
         ck.toggle();
-        if (!ck.isChecked()) {
-            mCheckPath.remove(mPreviewVp.getCurrentItem());
-        } else {
-            if (!mCheckPath.contains(paths.get(mPreviewVp.getCurrentItem()))) {
-                mCheckPath.add(paths.get(mPreviewVp.getCurrentItem()));
-            }
-        }
+        mCheckPath.set(mPreviewVp.getCurrentItem(), ck.isChecked());
         ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
         adapter.notifyItemChanged(mPreviewVp.getCurrentItem());
     }
@@ -222,7 +226,9 @@ public class PreviewActivity extends Activity {
 
         public void setSelectPos(int pos) {
             mSelectPos = pos;
-            notifyDataSetChanged();
+            notifyItemChanged(pos - 1);
+            notifyItemChanged(pos);
+            notifyItemChanged(pos + 1);
         }
 
 
@@ -238,7 +244,9 @@ public class PreviewActivity extends Activity {
             final RelativeLayout root = (RelativeLayout) holder.itemView;
             if (position == mSelectPos) holder.border.setVisibility(View.VISIBLE);
             else holder.border.setVisibility(View.INVISIBLE);
-            if (mCheckPath.contains(paths.get(position))) holder.shadow.setVisibility(View.INVISIBLE);
+
+            if (mCheckPath.get(position))
+                holder.shadow.setVisibility(View.INVISIBLE);
             else holder.shadow.setVisibility(View.VISIBLE);
             root.setOnClickListener(new View.OnClickListener() {
                 @Override

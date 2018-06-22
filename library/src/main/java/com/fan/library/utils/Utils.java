@@ -22,6 +22,11 @@ public class Utils {
         return BitmapFactory.decodeFile(path, options);
     }
 
+    public static boolean isPicture(String path) {
+
+        return path.endsWith("gif") || path.endsWith("jpg") || path.endsWith("png");
+    }
+
     public static boolean isGif(String path) {
 
         return path.endsWith("gif");

@@ -11,6 +11,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void start(View view) {
         Config config = Config.get();
-        config.setMaxNum(5);
+        config.setMaxNum(15);
         config.setMinMum(1);
         config.setOpenEdit(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -67,7 +68,8 @@ public class MainActivity extends AppCompatActivity {
             if (paths != null) paths.clear();
             paths = data.getStringArrayListExtra("paths");
             imageViews.clear();
-            for (final String p : paths) {
+            for (String p : paths) {
+                Log.e("main", "path " + p);
                 ImageView imageView = new ImageView(MainActivity.this);
                 Bitmap result = Utils.compress(p, MainActivity.this.getResources().getDisplayMetrics().widthPixels, vp.getHeight());
                 imageView.setImageBitmap(result);
