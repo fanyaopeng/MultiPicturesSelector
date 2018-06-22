@@ -415,8 +415,7 @@ public class MultiPicturesSelectorActivity extends Activity {
                     public void onClick(View v) {
                         FrameLayout parent = (FrameLayout) v;
                         CheckImageView view = (CheckImageView) parent.getChildAt(0);
-                        boolean isChecked = view.isChecked();
-                        view.setChecked(!isChecked);
+                        view.toggle();
                         if (view.isChecked() && !mCheckPaths.contains(path)) {
 
                             if (mCheckPaths.size() == mMaxNum) {

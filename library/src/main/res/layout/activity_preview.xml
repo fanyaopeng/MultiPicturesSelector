@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/vp"
+        android:id="@+id/vp_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
@@ -46,7 +46,6 @@
             android:textSize="18sp" />
 
         <TextView
-            android:onClick="complete"
             android:layout_width="wrap_content"
             android:layout_height="27dp"
             android:layout_alignParentRight="true"
@@ -55,28 +54,68 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_green_solid"
             android:gravity="center"
+            android:onClick="complete"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:text="完成"
             android:textColor="@android:color/white" />
     </RelativeLayout>
 
-    <RelativeLayout
+
+    <LinearLayout
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/status_bar"
-        android:paddingLeft="12dp">
+        android:orientation="vertical">
 
-        <TextView
-            android:onClick="edit"
-            android:id="@+id/tv_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            android:gravity="center_vertical"
-            android:text="编辑"
-            android:textColor="@android:color/white" />
-    </RelativeLayout>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/thumb_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginTop="12dp">
+
+        </android.support.v7.widget.RecyclerView>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="#555555" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <TextView
+                android:id="@+id/tv_edit"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="12dp"
+                android:gravity="center_vertical"
+                android:onClick="edit"
+                android:text="编辑"
+                android:textColor="@android:color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp"
+                android:layout_toLeftOf="@+id/ck_select_cur"
+                android:text="选择"
+                android:textColor="@android:color/white" />
+
+            <com.fan.library.view.CheckImageView
+                android:id="@+id/ck_select_cur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="12dp"
+                android:src="@mipmap/ic_checked" />
+        </RelativeLayout>
+    </LinearLayout>
 </RelativeLayout>

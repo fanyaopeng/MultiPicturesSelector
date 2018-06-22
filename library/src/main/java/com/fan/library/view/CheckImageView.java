@@ -6,11 +6,12 @@ import android.graphics.drawable.StateListDrawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.Checkable;
 import android.widget.ImageView;
 
 import com.fan.library.R;
 
-public class CheckImageView extends ImageView {
+public class CheckImageView extends ImageView implements Checkable {
     private boolean isChecked;
 
     public CheckImageView(Context context) {
@@ -32,5 +33,10 @@ public class CheckImageView extends ImageView {
 
     public boolean isChecked() {
         return isChecked;
+    }
+
+    @Override
+    public void toggle() {
+        setChecked(!isChecked);
     }
 }

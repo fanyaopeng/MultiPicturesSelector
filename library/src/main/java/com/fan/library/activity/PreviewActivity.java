@@ -8,9 +8,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -28,11 +33,13 @@ import java.util.List;
  * 已知  剪切的时候的  经过缩放后 越界处理 不正确
  */
 public class PreviewActivity extends Activity {
-    private ViewPager vp;
+    private ViewPager mPreviewVp;
     private List<String> paths;
     private RelativeLayout mTopBar;
-    private RelativeLayout mBottomBar;
+    private LinearLayout mBottomBar;
     private TextView tvTitle;
+    private RecyclerView mThumbList;
+    private TextView tvEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,20 +50,23 @@ public class PreviewActivity extends Activity {
         }
         paths = getIntent().getStringArrayListExtra("paths");
         initView();
-        vp.post(new Runnable() {
+        initThumb();
+        mPreviewVp.post(new Runnable() {
             @Override
             public void run() {
-                init();
+                initPreview();
             }
         });
     }
 
     private void initView() {
-        vp = findViewById(R.id.vp);
+        mPreviewVp = findViewById(R.id.vp_preview);
         mTopBar = findViewById(R.id.top_bar);
         mBottomBar = findViewById(R.id.bottom_bar);
         mBottomBar.setAlpha(0.8f);
+        mThumbList = findViewById(R.id.thumb_list);
         tvTitle = findViewById(R.id.title);
+        tvEdit = findViewById(R.id.tv_edit);
         Config config = Config.get();
         if (!config.isOpenClip && !config.isOpenEdit) {
             mBottomBar.setVisibility(View.GONE);
@@ -72,7 +82,7 @@ public class PreviewActivity extends Activity {
 
     public void edit(View view) {
         Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
-        intent.putExtra("path", paths.get(vp.getCurrentItem()));
+        intent.putExtra("path", paths.get(mPreviewVp.getCurrentItem()));
         startActivityForResult(intent, requestEdit);
     }
 
@@ -84,35 +94,36 @@ public class PreviewActivity extends Activity {
         if (requestCode == requestEdit) {
             if (resultCode == RESULT_OK) {
                 String path = data.getStringExtra("path");
-                paths.set(vp.getCurrentItem(), path);
-                ScaleImageView image = (ScaleImageView) imageViews.get(vp.getCurrentItem());
-                Bitmap result = Utils.compress(path, vp.getWidth(), vp.getHeight());
+                paths.set(mPreviewVp.getCurrentItem(), path);
+                ScaleImageView image = (ScaleImageView) mPreViewImages.get(mPreviewVp.getCurrentItem());
+                Bitmap result = Utils.compress(path, mPreviewVp.getWidth(), mPreviewVp.getHeight());
                 image.setImageBitmap(result);
-                //imageViews.set(vp.getCurrentItem(), image);
-                vp.getAdapter().notifyDataSetChanged();
+                //mPreViewImages.set(mPreviewVp.getCurrentItem(), image);
+                mPreviewVp.getAdapter().notifyDataSetChanged();
+                mThumbList.getAdapter().notifyDataSetChanged();
             }
         }
     }
 
-    private void init() {
-        imageViews.clear();
+    private void initPreview() {
+        mPreViewImages.clear();
         for (String p : paths) {
             if (!Utils.isGif(p)) {
                 ScaleImageView imageView = new ScaleImageView(this);
-                Bitmap result = Utils.compress(p, vp.getWidth(), vp.getHeight());
+                Bitmap result = Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight());
                 imageView.setImageBitmap(result);
-                imageViews.add(imageView);
+                mPreViewImages.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);
                 gifImageView.setResource(p);
-                imageViews.add(gifImageView);
+                mPreViewImages.add(gifImageView);
             }
         }
-        if (imageViews.size() != 0)
-            vp.setAdapter(new ImageAdapter());
-        tvTitle.setText(vp.getCurrentItem() + 1 + "/" + paths.size());
+        if (mPreViewImages.size() != 0)
+            mPreviewVp.setAdapter(new ImageAdapter());
+        tvTitle.setText(mPreviewVp.getCurrentItem() + 1 + "/" + paths.size());
         initTop();
-        vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mPreviewVp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -121,6 +132,14 @@ public class PreviewActivity extends Activity {
             @Override
             public void onPageSelected(int position) {
                 tvTitle.setText(position + 1 + "/" + paths.size());
+//                ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
+//                adapter.setSelectPos(position);
+                setThumbPos(position);
+                if (Utils.isGif(paths.get(position))) {
+                    tvEdit.setVisibility(View.GONE);
+                } else {
+                    tvEdit.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
@@ -130,7 +149,8 @@ public class PreviewActivity extends Activity {
         });
     }
 
-    private List<View> imageViews = new ArrayList<>();
+
+    private List<View> mPreViewImages = new ArrayList<>();
 
     private class ImageAdapter extends PagerAdapter {
 
@@ -147,22 +167,90 @@ public class PreviewActivity extends Activity {
         @NonNull
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
-            container.addView(imageViews.get(position));
+            container.addView(mPreViewImages.get(position));
             if (!Utils.isGif(paths.get(position))) {
-                ScaleImageView scaleImageView = (ScaleImageView) imageViews.get(position);
+                ScaleImageView scaleImageView = (ScaleImageView) mPreViewImages.get(position);
                 scaleImageView.setOnGestureListener(new HandleSingleTap());
             }
-            return imageViews.get(position);
+            return mPreViewImages.get(position);
         }
 
         @Override
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-            container.removeView(imageViews.get(position));
+            container.removeView(mPreViewImages.get(position));
         }
 
         @Override
         public int getItemPosition(Object object) {
             return POSITION_NONE;
+        }
+    }
+
+
+    private void initThumb() {
+        mThumbList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        mThumbList.setAdapter(new ThumbAdapter());
+    }
+
+    private void setThumbPos(int pos) {
+        for (int i = 0; i < mThumbList.getChildCount(); i++) {
+            RelativeLayout rel = (RelativeLayout) mThumbList.getChildAt(i);
+            if (i == pos) {
+                rel.findViewById(R.id.border).setVisibility(View.VISIBLE);
+            } else {
+                rel.findViewById(R.id.border).setVisibility(View.INVISIBLE);
+            }
+        }
+        ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
+        adapter.setSelectPos(pos);//避免recycle
+    }
+
+    private class ThumbAdapter extends RecyclerView.Adapter<ThumbAdapter.VH> {
+        private int selectPos;
+
+        public void setSelectPos(int pos) {
+            selectPos = pos;
+        }
+
+        @Override
+        public VH onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new VH(LayoutInflater.from(parent.getContext()).inflate(R.layout.preview_thumb_item, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(final VH holder, int position) {
+            int size = Utils.dp2px(PreviewActivity.this, 70);
+            holder.image.setImageBitmap(Utils.compress(paths.get(position), size, size));
+            final RelativeLayout root = (RelativeLayout) holder.itemView;
+//
+//            final int padding = Utils.dp2px(PreviewActivity.this, 1);
+            if (position == selectPos) holder.border.setVisibility(View.VISIBLE);
+            else holder.border.setVisibility(View.INVISIBLE);
+            root.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int pos = holder.getAdapterPosition();
+                    mPreviewVp.setCurrentItem(pos);
+//                    selectPos = pos;
+//                    //notifyDataSetChanged();
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return paths.size();
+        }
+
+        class VH extends RecyclerView.ViewHolder {
+            ImageView image;
+            View border;
+
+            public VH(View itemView) {
+                super(itemView);
+                image = itemView.findViewById(R.id.image);
+                border = itemView.findViewById(R.id.border);
+            }
         }
     }
 
@@ -193,12 +281,12 @@ public class PreviewActivity extends Activity {
             //根据资源ID获取响应的尺寸值
             statusBarHeight = getResources().getDimensionPixelSize(resourceId);
         }
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) vp.getLayoutParams();
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mPreviewVp.getLayoutParams();
         if (isShow)
             params.topMargin = -statusBarHeight;
         else
             params.topMargin = 0;
-        vp.setLayoutParams(params);
+        mPreviewVp.setLayoutParams(params);
     }
 
 }
