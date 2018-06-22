@@ -45,6 +45,7 @@ public class PreviewActivity extends Activity {
     private RecyclerView mThumbList;
     private TextView tvEdit;
     private List<String> mCheckPath;
+    private CheckImageView mCheckView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +75,7 @@ public class PreviewActivity extends Activity {
         mThumbList = findViewById(R.id.thumb_list);
         tvTitle = findViewById(R.id.title);
         tvEdit = findViewById(R.id.tv_edit);
+        mCheckView = findViewById(R.id.ck);
         Config config = Config.get();
         if (!config.isOpenClip && !config.isOpenEdit) {
             mBottomBar.setVisibility(View.GONE);
@@ -146,6 +148,7 @@ public class PreviewActivity extends Activity {
                 } else {
                     tvEdit.setVisibility(View.VISIBLE);
                 }
+                mCheckView.setChecked(mCheckPath.contains(paths.get(position)));
             }
 
             @Override
@@ -166,7 +169,7 @@ public class PreviewActivity extends Activity {
             }
         }
         ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
-        adapter.setUncheckPos(mPreviewVp.getCurrentItem());
+        adapter.notifyItemChanged(mPreviewVp.getCurrentItem());
     }
 
     private List<View> mPreViewImages = new ArrayList<>();
@@ -216,17 +219,12 @@ public class PreviewActivity extends Activity {
 
     private class ThumbAdapter extends RecyclerView.Adapter<ThumbAdapter.VH> {
         private int mSelectPos;
-        private int mUncheckedPos = -1;
 
         public void setSelectPos(int pos) {
             mSelectPos = pos;
             notifyDataSetChanged();
         }
 
-        public void setUncheckPos(int pos) {
-            mUncheckedPos = pos;
-            notifyItemChanged(pos);
-        }
 
         @Override
         public VH onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -240,8 +238,8 @@ public class PreviewActivity extends Activity {
             final RelativeLayout root = (RelativeLayout) holder.itemView;
             if (position == mSelectPos) holder.border.setVisibility(View.VISIBLE);
             else holder.border.setVisibility(View.INVISIBLE);
-            if (position == mUncheckedPos) holder.shadow.setVisibility(View.VISIBLE);
-            else holder.shadow.setVisibility(View.INVISIBLE);
+            if (mCheckPath.contains(paths.get(position))) holder.shadow.setVisibility(View.INVISIBLE);
+            else holder.shadow.setVisibility(View.VISIBLE);
             root.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
