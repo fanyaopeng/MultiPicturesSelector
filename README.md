@@ -16,3 +16,5 @@
  
  回调   paths = data.getStringArrayListExtra("paths");//返回 路径数组
 
+##截图
+![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230917.jpg)
