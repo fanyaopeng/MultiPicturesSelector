@@ -18,3 +18,13 @@
 
 ##截图
 ![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230917.jpg)
+
+![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230921.jpg)
+
+![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230931.jpg)
+
+![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230938.jpg)
+
+![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230948.jpg)
+
+![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230956.jpg)
