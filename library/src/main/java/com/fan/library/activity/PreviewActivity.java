@@ -21,12 +21,16 @@ import android.widget.TextView;
 
 import com.fan.library.R;
 import com.fan.library.utils.Config;
+import com.fan.library.utils.DisplayImageTask;
 import com.fan.library.utils.Utils;
+import com.fan.library.view.CheckImageView;
 import com.fan.library.view.GifImageView;
 import com.fan.library.view.ScaleImageView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 已知  编辑后  原来的图片 不会消失
@@ -40,6 +44,7 @@ public class PreviewActivity extends Activity {
     private TextView tvTitle;
     private RecyclerView mThumbList;
     private TextView tvEdit;
+    private List<String> mCheckPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +54,8 @@ public class PreviewActivity extends Activity {
             getWindow().setStatusBarColor(getResources().getColor(R.color.status_bar));
         }
         paths = getIntent().getStringArrayListExtra("paths");
+        mCheckPath = new ArrayList<>();
+        mCheckPath.addAll(paths);
         initView();
         initThumb();
         mPreviewVp.post(new Runnable() {
@@ -75,7 +82,7 @@ public class PreviewActivity extends Activity {
 
     public void complete(View view) {
         Intent intent = new Intent();
-        intent.putStringArrayListExtra("paths", (ArrayList<String>) paths);
+        intent.putStringArrayListExtra("paths", (ArrayList<String>) mCheckPath);
         setResult(RESULT_OK, intent);
         finish();
     }
@@ -132,9 +139,8 @@ public class PreviewActivity extends Activity {
             @Override
             public void onPageSelected(int position) {
                 tvTitle.setText(position + 1 + "/" + paths.size());
-//                ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
-//                adapter.setSelectPos(position);
-                setThumbPos(position);
+                ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
+                adapter.setSelectPos(position);
                 if (Utils.isGif(paths.get(position))) {
                     tvEdit.setVisibility(View.GONE);
                 } else {
@@ -149,6 +155,19 @@ public class PreviewActivity extends Activity {
         });
     }
 
+    public void onCheckClick(View view) {
+        CheckImageView ck = (CheckImageView) ((ViewGroup) view).getChildAt(0);
+        ck.toggle();
+        if (!ck.isChecked()) {
+            mCheckPath.remove(mPreviewVp.getCurrentItem());
+        } else {
+            if (!mCheckPath.contains(paths.get(mPreviewVp.getCurrentItem()))) {
+                mCheckPath.add(paths.get(mPreviewVp.getCurrentItem()));
+            }
+        }
+        ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
+        adapter.setUncheckPos(mPreviewVp.getCurrentItem());
+    }
 
     private List<View> mPreViewImages = new ArrayList<>();
 
@@ -192,24 +211,21 @@ public class PreviewActivity extends Activity {
         mThumbList.setAdapter(new ThumbAdapter());
     }
 
-    private void setThumbPos(int pos) {
-        for (int i = 0; i < mThumbList.getChildCount(); i++) {
-            RelativeLayout rel = (RelativeLayout) mThumbList.getChildAt(i);
-            if (i == pos) {
-                rel.findViewById(R.id.border).setVisibility(View.VISIBLE);
-            } else {
-                rel.findViewById(R.id.border).setVisibility(View.INVISIBLE);
-            }
-        }
-        ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
-        adapter.setSelectPos(pos);//避免recycle
-    }
+
+    private ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private class ThumbAdapter extends RecyclerView.Adapter<ThumbAdapter.VH> {
-        private int selectPos;
+        private int mSelectPos;
+        private int mUncheckedPos = -1;
 
         public void setSelectPos(int pos) {
-            selectPos = pos;
+            mSelectPos = pos;
+            notifyDataSetChanged();
+        }
+
+        public void setUncheckPos(int pos) {
+            mUncheckedPos = pos;
+            notifyItemChanged(pos);
         }
 
         @Override
@@ -220,19 +236,17 @@ public class PreviewActivity extends Activity {
         @Override
         public void onBindViewHolder(final VH holder, int position) {
             int size = Utils.dp2px(PreviewActivity.this, 70);
-            holder.image.setImageBitmap(Utils.compress(paths.get(position), size, size));
+            service.execute(new DisplayImageTask(PreviewActivity.this, paths.get(position), holder.image, size, size));
             final RelativeLayout root = (RelativeLayout) holder.itemView;
-//
-//            final int padding = Utils.dp2px(PreviewActivity.this, 1);
-            if (position == selectPos) holder.border.setVisibility(View.VISIBLE);
+            if (position == mSelectPos) holder.border.setVisibility(View.VISIBLE);
             else holder.border.setVisibility(View.INVISIBLE);
+            if (position == mUncheckedPos) holder.shadow.setVisibility(View.VISIBLE);
+            else holder.shadow.setVisibility(View.INVISIBLE);
             root.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int pos = holder.getAdapterPosition();
                     mPreviewVp.setCurrentItem(pos);
-//                    selectPos = pos;
-//                    //notifyDataSetChanged();
                 }
             });
         }
@@ -245,11 +259,13 @@ public class PreviewActivity extends Activity {
         class VH extends RecyclerView.ViewHolder {
             ImageView image;
             View border;
+            View shadow;
 
             public VH(View itemView) {
                 super(itemView);
                 image = itemView.findViewById(R.id.image);
                 border = itemView.findViewById(R.id.border);
+                shadow = itemView.findViewById(R.id.shadow);
             }
         }
     }

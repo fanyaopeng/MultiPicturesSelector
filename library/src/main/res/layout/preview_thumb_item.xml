@@ -18,4 +18,12 @@
         android:layout_centerInParent="true"
         android:scaleType="centerCrop"
         android:src="@mipmap/image1" />
+
+    <View
+        android:visibility="gone"
+        android:id="@+id/shadow"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+        android:layout_centerInParent="true"
+        android:background="#aaaaaaaa" />
 </RelativeLayout>

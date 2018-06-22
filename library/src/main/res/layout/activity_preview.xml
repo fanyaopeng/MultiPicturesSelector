@@ -108,14 +108,20 @@
                 android:text="选择"
                 android:textColor="@android:color/white" />
 
-            <com.fan.library.view.CheckImageView
+            <FrameLayout
+                android:onClick="onCheckClick"
                 android:id="@+id/ck_select_cur"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="12dp"
-                android:src="@mipmap/ic_checked" />
+                android:layout_centerVertical="true">
+                <com.fan.library.view.CheckImageView
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/ic_checked" />
+            </FrameLayout>
+
         </RelativeLayout>
     </LinearLayout>
 </RelativeLayout>
