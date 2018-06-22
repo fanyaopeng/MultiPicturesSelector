@@ -1,7 +1,8 @@
 # MultiPicturesSelector
-# 仿微信的多图选择器 实现了主要的几个功能 
+## 仿微信的多图选择器 实现了主要的几个功能 
 
-## 配置选项  Config config = Config.get();
+## 配置选项  
+ Config config = Config.get();
  config.setMaxNum(15);//最大选择数
  config.setMinMum(1);//最小选择数
  config.setOpenEdit(false);//是否可以涂鸦
