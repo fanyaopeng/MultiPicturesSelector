@@ -2,6 +2,7 @@ package com.fan.library.utils;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.fan.library.cache.DoubleImageCache;
@@ -28,7 +29,11 @@ public class DisplayImageTask implements Runnable {
     @Override
     public void run() {
         Bitmap bitmap = mCache.get(mPath);
-        if (bitmap == null) {
+        boolean isSize = false;
+        if (bitmap != null) {
+            isSize = Math.abs((bitmap.getWidth() - mWidth)) < 10 || Math.abs((bitmap.getHeight() - mHeight)) < 10;
+        }
+        if (bitmap == null || !isSize) {
             bitmap = Utils.compress(mPath, mWidth, mHeight);
             mCache.put(mPath, bitmap);
         }

@@ -58,6 +58,7 @@ public class PreviewActivity extends Activity {
         paths = getIntent().getStringArrayListExtra("paths");
         mCheckPath = new ArrayList<>();
         for (String s : paths) {
+            Log.e("main", "path    " + s);
             mCheckPath.add(true);
         }
         initView();
@@ -113,7 +114,7 @@ public class PreviewActivity extends Activity {
             if (resultCode == RESULT_OK) {
                 String path = data.getStringExtra("path");
                 paths.set(mPreviewVp.getCurrentItem(), path);
-                ScaleImageView image = (ScaleImageView) mPreViewImages.get(mPreviewVp.getCurrentItem());
+                ScaleImageView image = (ScaleImageView) mPreviewVp.getChildAt(mPreviewVp.getCurrentItem());
                 Bitmap result = Utils.compress(path, mPreviewVp.getWidth(), mPreviewVp.getHeight());
                 image.setImageBitmap(result);
                 //mPreViewImages.set(mPreviewVp.getCurrentItem(), image);
@@ -124,21 +125,7 @@ public class PreviewActivity extends Activity {
     }
 
     private void initPreview() {
-        mPreViewImages.clear();
-        for (String p : paths) {
-            if (!Utils.isGif(p)) {
-                ScaleImageView imageView = new ScaleImageView(this);
-                //service.execute(new DisplayImageTask(this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
-                imageView.setImageBitmap(Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
-                mPreViewImages.add(imageView);
-            } else {
-                GifImageView gifImageView = new GifImageView(this);
-                gifImageView.setResource(p);
-                mPreViewImages.add(gifImageView);
-            }
-        }
-        if (mPreViewImages.size() != 0)
-            mPreviewVp.setAdapter(new ImageAdapter());
+        mPreviewVp.setAdapter(new ImageAdapter());
         tvTitle.setText(mPreviewVp.getCurrentItem() + 1 + "/" + paths.size());
         initTop();
         mPreviewVp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -176,8 +163,6 @@ public class PreviewActivity extends Activity {
         adapter.notifyItemChanged(mPreviewVp.getCurrentItem());
     }
 
-    private List<View> mPreViewImages = new ArrayList<>();
-
     private class ImageAdapter extends PagerAdapter {
 
         @Override
@@ -193,17 +178,27 @@ public class PreviewActivity extends Activity {
         @NonNull
         @Override
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
-            container.addView(mPreViewImages.get(position));
-            if (!Utils.isGif(paths.get(position))) {
-                ScaleImageView scaleImageView = (ScaleImageView) mPreViewImages.get(position);
-                scaleImageView.setOnGestureListener(new HandleSingleTap());
+            String p = paths.get(position);
+            View result;
+            if (!Utils.isGif(p)) {
+                ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
+                //service.execute(new DisplayImageTask(this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                imageView.setImageBitmap(Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                container.addView(imageView);
+                result = imageView;
+                imageView.setOnGestureListener(new HandleSingleTap());
+            } else {
+                GifImageView gifImageView = new GifImageView(PreviewActivity.this);
+                gifImageView.setResource(p);
+                container.addView(gifImageView);
+                result = gifImageView;
             }
-            return mPreViewImages.get(position);
+            return result;
         }
 
         @Override
         public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
-            container.removeView(mPreViewImages.get(position));
+            container.removeView((View) object);
         }
 
         @Override
