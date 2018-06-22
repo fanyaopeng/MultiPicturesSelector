@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
             paths = data.getStringArrayListExtra("paths");
             imageViews.clear();
             for (String p : paths) {
-                Log.e("main", "path " + p);
                 ImageView imageView = new ImageView(MainActivity.this);
                 Bitmap result = Utils.compress(p, MainActivity.this.getResources().getDisplayMetrics().widthPixels, vp.getHeight());
                 imageView.setImageBitmap(result);
