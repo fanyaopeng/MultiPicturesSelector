@@ -128,8 +128,8 @@ public class PreviewActivity extends Activity {
         for (String p : paths) {
             if (!Utils.isGif(p)) {
                 ScaleImageView imageView = new ScaleImageView(this);
-                service.execute(new DisplayImageTask(this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
-                //imageView.setImageBitmap(result);
+                //service.execute(new DisplayImageTask(this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                imageView.setImageBitmap(Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
                 mPreViewImages.add(imageView);
             } else {
                 GifImageView gifImageView = new GifImageView(this);

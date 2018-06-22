@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
         Config config = Config.get();
         config.setMaxNum(15);
         config.setMinMum(1);
-        config.setOpenEdit(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
