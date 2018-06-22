@@ -29,6 +29,8 @@
 
 ![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230956.jpg)
 
-## dependencies {
+## 使用
+
+dependencies {
    	        implementation 'com.github.fanyaopeng:MultiPicturesSelector:v1.0.0'
    	}
