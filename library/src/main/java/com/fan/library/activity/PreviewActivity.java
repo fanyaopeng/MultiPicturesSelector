@@ -33,10 +33,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * 已知  编辑后  原来的图片 不会消失
- * 已知  剪切的时候的  经过缩放后 越界处理 不正确
- */
 public class PreviewActivity extends Activity {
     private ViewPager mPreviewVp;
     private List<String> paths;
@@ -58,7 +54,6 @@ public class PreviewActivity extends Activity {
         paths = getIntent().getStringArrayListExtra("paths");
         mCheckPath = new ArrayList<>();
         for (String s : paths) {
-            Log.e("main", "path    " + s);
             mCheckPath.add(true);
         }
         initView();
@@ -89,12 +84,13 @@ public class PreviewActivity extends Activity {
 
     public void complete(View view) {
         Intent intent = new Intent();
+        List<String> result = new ArrayList<>();
         for (int i = 0; i < mCheckPath.size(); i++) {
-            if (!mCheckPath.get(i)) {
-                paths.remove(i);
+            if (mCheckPath.get(i)) {
+                result.add(paths.get(i));
             }
         }
-        intent.putStringArrayListExtra("paths", (ArrayList<String>) paths);
+        intent.putStringArrayListExtra("paths", (ArrayList<String>) result);
         setResult(RESULT_OK, intent);
         finish();
     }

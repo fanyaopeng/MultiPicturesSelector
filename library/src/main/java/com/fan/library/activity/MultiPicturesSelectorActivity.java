@@ -448,7 +448,7 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         @Override
         public int getItemCount() {
-            return mSelectDirsPictures.size();
+            return Config.get().isOpenCamera?mSelectDirsPictures.size()+1:mSelectDirsPictures.size();
         }
 
         public class CameraVH extends RecyclerView.ViewHolder {
