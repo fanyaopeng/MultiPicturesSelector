@@ -1,7 +1,11 @@
 # MultiPicturesSelector
 ## 仿微信的多图选择器 实现了主要的几个功能 
 
+ androiod 7.0 请加入FileProvider
+ 
 ## 配置选项  
+ 首先添加存储权限  进入之前 请先请求权限 
+ 
  Config config = Config.get();  
  
  config.setMaxNum(15);//最大选择数  
