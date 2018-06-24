@@ -26,7 +26,9 @@
  config.setOpenEdit(false);//是否可以涂鸦  
  
  config.setOpenClip(false);//是否可以剪切      
-     
+
+ config.isOpenCamera = false;//是否开启相机
+
  启动 startActivityForResult(new Intent(this, MultiPicturesSelectorActivity.class), 0);
  
  回调   paths = data.getStringArrayListExtra("paths");//返回 路径数组
