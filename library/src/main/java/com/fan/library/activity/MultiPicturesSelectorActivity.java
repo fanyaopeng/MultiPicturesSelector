@@ -372,7 +372,7 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         @Override
         public int getItemViewType(int position) {
-            if (position == 0) {
+            if (position == 0 && Config.get().isOpenCamera) {
                 return TYPE_CAMERA;
             }
             return super.getItemViewType(position);
@@ -407,7 +407,9 @@ public class MultiPicturesSelectorActivity extends Activity {
                 params.width = mItemSize;
                 params.height = mItemSize;
                 ImageView img = holder.img;
-                final String path = mSelectDirsPictures.get(position - 1).getPath();
+                int realPos = position;
+                if (Config.get().isOpenCamera) realPos = position - 1;
+                final String path = mSelectDirsPictures.get(realPos).getPath();
                 mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
                         path, img, mItemSize, mItemSize));
                 holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);

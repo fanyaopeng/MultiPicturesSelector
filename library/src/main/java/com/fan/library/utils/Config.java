@@ -5,6 +5,7 @@ public class Config {
     public int minMum = 0;
     public boolean isOpenClip = true;
     public boolean isOpenEdit = true;
+    public boolean isOpenCamera = true;
     private static Config sConfig;
     private static Object lock = new Object();
 

@@ -1,9 +1,19 @@
 # MultiPicturesSelector
 ## 仿微信的多图选择器 实现了主要的几个功能 
- 首先添加存储权限  进入之前 请先请求权限 
- 
- androiod 7.0 请加入FileProvider
- 
+ 首先添加存储权限  进入之前 android 6.0+ 请先请求权限
+
+ 如果开启了相机  android 7.0 请加入FileProvider
+
+   <provider
+             android:name="android.support.v4.content.FileProvider"
+             android:authorities="com.fan.multipicturesselector"
+             android:exported="false"
+             android:grantUriPermissions="true">
+             <meta-data
+                 android:name="android.support.FILE_PROVIDER_PATHS"
+                 android:resource="@xml/paths" />
+         </provider>
+
 ## 配置选项  
 
  
