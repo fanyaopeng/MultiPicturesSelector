@@ -4,16 +4,6 @@
 
  如果开启了相机  android 7.0 请加入FileProvider
 
-   <provider
-             android:name="android.support.v4.content.FileProvider"
-             android:authorities="com.fan.multipicturesselector"
-             android:exported="false"
-             android:grantUriPermissions="true">
-             <meta-data
-                 android:name="android.support.FILE_PROVIDER_PATHS"
-                 android:resource="@xml/paths" />
-         </provider>
-
 ## 配置选项  
 
  
