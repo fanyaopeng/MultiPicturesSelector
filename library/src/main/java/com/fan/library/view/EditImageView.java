@@ -72,8 +72,8 @@ public class EditImageView extends ScaleImageView {
         RectF rectF = getMatrixRectF();
         float dx = 0;
         float dy = 0;
-        float width = getWidth();
-        float height = getHeight();
+        float width = mInitRange.width();
+        float height = mInitRange.height();
         if (rectF.width() >= width) {
             if (rectF.left > mInitRange.left) {
                 dx = mInitRange.left - rectF.left;

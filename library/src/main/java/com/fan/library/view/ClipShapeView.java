@@ -101,6 +101,10 @@ public class ClipShapeView extends View {
     private boolean shouldMove(MotionEvent e) {
         float x = e.getX();
         float y = e.getY();
+        if (x > mProfile.right || x < mProfile.left || y > mProfile.bottom || y < mProfile.top) {
+            //在矩形的外面
+            return false;
+        }
         if (x < mProfile.left + mCornerSize && y < mProfile.top + mCornerSize) {
             mCurScrollRange = LEFT_TOP;
             return true;
