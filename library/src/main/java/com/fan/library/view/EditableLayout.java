@@ -78,6 +78,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
 
     public void in() {
         mImage.setClipPosition(mClipScale);
+        //只在剪切的时候 使用一次
         mImage.setOnScaleEndListener(new ScaleImageView.OnScaleEndListener() {
             @Override
             public void onScaleEnd() {
