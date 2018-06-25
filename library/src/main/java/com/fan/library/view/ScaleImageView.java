@@ -323,6 +323,7 @@ public class ScaleImageView extends ImageView {
                 if (animation.getAnimatedFraction() == 1) {
                     checkBorder();
                     if (mScaleEndListener != null) mScaleEndListener.onScaleEnd();
+                    mScaleEndListener = null;
                 }
             }
         });

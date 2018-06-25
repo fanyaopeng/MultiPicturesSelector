@@ -9,6 +9,7 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -160,8 +161,6 @@ public class ClipShapeView extends View {
     }
 
     public void setRange(RectF rectF) {
-        float mScale = 0.8f;
-
         float targetWidth = rectF.width();
         float targetHeight = rectF.height();
         rectF.left = (getWidth() - targetWidth) / 2;
@@ -177,9 +176,6 @@ public class ClipShapeView extends View {
         invalidate();
     }
 
-    public void reset(EditImageView img) {
-        img.resetClipPosition(0.8f);
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -293,10 +289,11 @@ public class ClipShapeView extends View {
 
     public RectF getCurRange() {
         if (mProfile == null) return null;
-        float left = mProfile.left;
-        float top = mProfile.top;
-        float right = mProfile.right;
-        float bottom = mProfile.bottom;
+        float offset = mProfileWidth / 2;
+        float left = mProfile.left + offset;
+        float top = mProfile.top + offset;
+        float right = mProfile.right - offset;
+        float bottom = mProfile.bottom - offset;
         return new RectF(left, top, right, bottom);
     }
 }

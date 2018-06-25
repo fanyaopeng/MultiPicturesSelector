@@ -31,7 +31,10 @@ public class DisplayImageTask implements Runnable {
         Bitmap bitmap = mCache.get(mPath);
         boolean isSize = false;
         if (bitmap != null) {
-            isSize = Math.abs((bitmap.getWidth() - mWidth)) < 10 || Math.abs((bitmap.getHeight() - mHeight)) < 10;
+            int widthDif = bitmap.getWidth() / mWidth;
+            int heightDif = bitmap.getHeight() / mHeight;
+            //如果 宽高的相差在0.5倍 到2倍之间  我们就认为 不需要再次压缩
+            isSize = widthDif > 0.5f && widthDif < 2f || heightDif > 0.5f && heightDif < 2f;
         }
         if (bitmap == null || !isSize) {
             bitmap = Utils.compress(mPath, mWidth, mHeight);

@@ -64,11 +64,10 @@ public class EditImageView extends ScaleImageView {
 
     @Override
     protected void checkBorder() {
-        if (!isInEditStatus) {
+        if (isInEditStatus || mInitRange == null || mInitRange.width() == 0 || mInitRange.height() == 0) {
             super.checkBorder();
             return;
         }
-        if (mInitRange == null) return;
         //在剪切的的情况下 我们不能让他超过我们矩形的 范围
         RectF rectF = getMatrixRectF();
         float dx = 0;
@@ -98,7 +97,6 @@ public class EditImageView extends ScaleImageView {
         if (rectF.height() < height) {
             dy = (mInitRange.bottom + mInitRange.top) / 2f + rectF.height() / 2f - rectF.bottom;
         }
-
         matrix.postTranslate(dx, dy);
         setImageMatrix(matrix);
     }
@@ -154,13 +152,26 @@ public class EditImageView extends ScaleImageView {
         return mPaths.get(mPaths.size() - 1);
     }
 
-    public void resetClipPosition(float scale) {
-        slowScale(getCurScale() / scale);
+    private float mInitScaleCopy;
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        mInitScaleCopy = mInitScale;
     }
 
     //剪切的位置
     public void setClipPosition(float scale) {
-        slowScale(mInitScale * scale);
+        mInitScale = mInitScaleCopy * scale;
+        mScaleFocus[0] = getWidth() / 2;
+        mScaleFocus[1] = getHeight() / 2;
+        slowScale(mInitScale);
     }
 
+    public void resetClipPosition() {
+        mInitScale = mInitScaleCopy;
+        mScaleFocus[0] = getWidth() / 2;
+        mScaleFocus[1] = getHeight() / 2;
+        slowScale(mInitScale);
+    }
 }
