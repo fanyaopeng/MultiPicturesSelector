@@ -322,10 +322,21 @@ public class ScaleImageView extends ImageView {
                 setImageMatrix(matrix);
                 if (animation.getAnimatedFraction() == 1) {
                     checkBorder();
+                    if (mScaleEndListener != null) mScaleEndListener.onScaleEnd();
                 }
             }
         });
         animator.setDuration(200).start();
+    }
+
+    public OnScaleEndListener mScaleEndListener;
+
+    public void setOnScaleEndListener(OnScaleEndListener listener) {
+        mScaleEndListener = listener;
+    }
+
+    public interface OnScaleEndListener {
+        void onScaleEnd();
     }
 
     private void slowTranslate(final float targetX, final float targetY) {

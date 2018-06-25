@@ -30,6 +30,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
     private LinearLayout mClipRoot;
     private RelativeLayout mTop;
     private ColorSelectView mColorSelector;
+    private float mClipScale = 0.8f;
 
     public EditableLayout(@NonNull Context context) {
         this(context, null);
@@ -77,9 +78,14 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
 
     public void in() {
         mShape.setVisibility(View.VISIBLE);
-        mShape.setImage(mImage);
-
-
+        mImage.setClipPosition(mClipScale);
+        mImage.setOnScaleEndListener(new ScaleImageView.OnScaleEndListener() {
+            @Override
+            public void onScaleEnd() {
+                mShape.setRange(mImage.getMatrixRectF());
+            }
+        });
+        mImage.setRange(mShape.getCurRange());
         isIn = true;
         mClipRoot.setVisibility(VISIBLE);
         if (mPosChangeListener != null) {

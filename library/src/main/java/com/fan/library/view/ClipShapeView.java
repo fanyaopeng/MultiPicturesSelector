@@ -159,14 +159,11 @@ public class ClipShapeView extends View {
         }
     }
 
-    public void setImage(EditImageView img) {
+    public void setRange(RectF rectF) {
         float mScale = 0.8f;
-        img.setClipPosition(mScale);
 
-        RectF rectF = img.getMatrixRectF();
-
-        float targetWidth = rectF.width() * mScale;
-        float targetHeight = rectF.height() * mScale;
+        float targetWidth = rectF.width();
+        float targetHeight = rectF.height();
         rectF.left = (getWidth() - targetWidth) / 2;
         rectF.right = rectF.left + targetWidth;
         rectF.top = (getHeight() - targetHeight) / 2;
@@ -178,7 +175,6 @@ public class ClipShapeView extends View {
         mRight = rectF.right;
         mBottom = rectF.bottom;
         invalidate();
-        img.setRange(rectF);
     }
 
     public void reset(EditImageView img) {
