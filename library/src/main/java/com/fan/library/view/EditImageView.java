@@ -64,8 +64,11 @@ public class EditImageView extends ScaleImageView {
 
     @Override
     protected void checkBorder() {
-        //super.checkBorder();
-        if (mInitRange == null) return;
+        if (!isInEditStatus) {
+            super.checkBorder();
+            return;
+        }
+        //在剪切的的情况下 我们不能让他超过我们矩形的 范围
         RectF rectF = getMatrixRectF();
         float dx = 0;
         float dy = 0;

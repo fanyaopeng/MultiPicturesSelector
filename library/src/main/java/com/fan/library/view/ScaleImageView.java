@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
@@ -26,6 +27,7 @@ public class ScaleImageView extends ImageView {
     private ScaleGestureDetector mScaleGestureDetector;
     private Scroller mScroller;
     protected float[] mScaleFocus = new float[2];
+    private float mTouchSlop;
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -40,14 +42,14 @@ public class ScaleImageView extends ImageView {
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleCallback());
         matrix = getImageMatrix();
         mScroller = new Scroller(context);
+        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
         mScaleGestureDetector.onTouchEvent(event);
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (isScale) isScale = false;
+        if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
             if (checkScrollBorder) {
                 checkBorder();
                 checkScrollBorder = false;
@@ -84,7 +86,6 @@ public class ScaleImageView extends ImageView {
         mGestureListener = listener;
     }
 
-    private boolean isDoubleTap;
     private boolean isScale;
 
     private class ScaleCallback extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -94,7 +95,8 @@ public class ScaleImageView extends ImageView {
             if (getCurScale() * factor < 0.5f * mInitScale) {
                 return true;
             }
-            isScale = true;
+            if (!isScale)
+                isScale = true;
             mScaleFocus[0] = detector.getFocusX();
             mScaleFocus[1] = detector.getFocusY();
 
@@ -105,6 +107,7 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
+            isScale = false;
             super.onScaleEnd(detector);
             if (getCurScale() > mMaxScale) {
                 slowScale(mMaxScale);
@@ -217,7 +220,6 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
-            isDoubleTap = true;
             float curScale = getCurScale();
             if (curScale < mCenterScale) {
                 mScaleFocus[0] = e.getX();
@@ -230,26 +232,21 @@ public class ScaleImageView extends ImageView {
         }
 
         @Override
-        public boolean onSingleTapUp(MotionEvent e) {
-            isDoubleTap = false;
-            postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (!isDoubleTap) {
-                        if (mGestureListener != null) {
-                            mGestureListener.onSingleTapUp();
-                        }
-                    }
-                }
-            }, 1000);
-            return super.onSingleTapUp(e);
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            if (mGestureListener != null) {
+                mGestureListener.onSingleTapUp();
+            }
+            return true;
         }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            if (Math.abs(distanceX) < mTouchSlop && Math.abs(distanceY) < mTouchSlop) {
+                return true;
+            }
             if (isScale) return true;//滑动的时候 如果在缩放 则 无操作
             ScaleImageView.this.onScroll(distanceX, distanceY);
-            return true;
+            return false;
         }
 
         @Override
@@ -296,12 +293,12 @@ public class ScaleImageView extends ImageView {
         float width = getWidth();
         float height = getHeight();
         if (rectF.height() > height || rectF.width() >= width) {
-            if (rectF.right == width && dx > 0) {
-                getParent().requestDisallowInterceptTouchEvent(false);
-            } else if (rectF.left == 0 && dx < 0) {
-                getParent().requestDisallowInterceptTouchEvent(false);
-            } else {
+            if (rectF.right >= width && dx > 0) {
                 getParent().requestDisallowInterceptTouchEvent(true);
+            } else if (rectF.left <= 0 && dx < 0) {
+                getParent().requestDisallowInterceptTouchEvent(true);
+            } else {
+                getParent().requestDisallowInterceptTouchEvent(false);
             }
         }
     }

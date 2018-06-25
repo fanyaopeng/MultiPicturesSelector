@@ -79,6 +79,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         mShape.setVisibility(View.VISIBLE);
         mShape.setImage(mImage);
 
+
         isIn = true;
         mClipRoot.setVisibility(VISIBLE);
         if (mPosChangeListener != null) {
