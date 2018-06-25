@@ -251,8 +251,8 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-           // fling(e1, e2, velocityX, velocityY);
-            return super.onFling(e1, e2, velocityX, velocityY);
+            //fling(e1, e2, velocityX, velocityY);
+            return true;
         }
 
     }
@@ -272,7 +272,6 @@ public class ScaleImageView extends ImageView {
 
         maxX = (int) (rectF.right - getWidth());
         maxY = (int) (rectF.bottom - getHeight());
-        Log.e("main", "max  " + maxX);
         mScroller.fling(startX, startY, (int) velocityX, (int) velocityY, minX, maxX, minY, maxY);
     }
 
@@ -287,7 +286,7 @@ public class ScaleImageView extends ImageView {
             int curY = mScroller.getCurrY();
             int dx = curX - mLastFlingX;
             int dy = curY - mLastFlingY;
-            Log.e("main", "dx  " + dx + "  dy " + dy);
+            //Log.e("main", "dx  " + dx + "  dy " + dy);
             matrix.postTranslate(dx, dy);
             mLastFlingX = curX;
             mLastFlingY = curY;
