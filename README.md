@@ -37,7 +37,13 @@
 ![image](https://github.com/fanyaopeng/MultiPicturesSelector/blob/master/images/Screenshot_20180622-230956.jpg)
 
 ## 使用
-
-dependencies {
-   	        implementation 'com.github.fanyaopeng:MultiPicturesSelector:v1.0.0'
-   	}
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://www.jitpack.io' }
+		}
+	}
+ 
+	dependencies {
+	        implementation 'com.github.fanyaopeng:MultiPicturesSelector:v1.0.1'
+	}
