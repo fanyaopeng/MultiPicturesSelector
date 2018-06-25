@@ -387,6 +387,9 @@ public class ScaleImageView extends ImageView {
         matrix.postScale(mInitScale, mInitScale, width / 2, height / 2);
         setImageMatrix(matrix);
         isInitScale = true;
+
+        mScaleFocus[0] = width / 2;
+        mScaleFocus[1] = height / 2;
     }
 
     public void rotate(float degree) {

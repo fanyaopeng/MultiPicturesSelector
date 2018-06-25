@@ -164,10 +164,6 @@ public class ClipShapeView extends View {
         img.setClipPosition(mScale);
 
         RectF rectF = img.getMatrixRectF();
-//        Matrix matrix = new Matrix();
-//        matrix.postScale(mScale, mScale);
-//        matrix.postTranslate()
-//        matrix.mapRect(rectF);
 
         float targetWidth = rectF.width() * mScale;
         float targetHeight = rectF.height() * mScale;

@@ -68,6 +68,7 @@ public class EditImageView extends ScaleImageView {
             super.checkBorder();
             return;
         }
+        if (mInitRange == null) return;
         //在剪切的的情况下 我们不能让他超过我们矩形的 范围
         RectF rectF = getMatrixRectF();
         float dx = 0;
@@ -153,25 +154,13 @@ public class EditImageView extends ScaleImageView {
         return mPaths.get(mPaths.size() - 1);
     }
 
-
     public void resetClipPosition(float scale) {
-
-        mScaleFocus[0] = getWidth() / 2;
-        mScaleFocus[1] = getHeight() / 2;
         slowScale(getCurScale() / scale);
-        mInitScale = scale;
-        mMaxScale = mInitScale * 4;
-        mCenterScale = mInitScale * 2;
     }
 
     //剪切的位置
     public void setClipPosition(float scale) {
-        mScaleFocus[0] = getWidth() / 2;
-        mScaleFocus[1] = getHeight() / 2;
-        slowScale(getCurScale() * scale);
-        mInitScale = getCurScale() * scale;
-        mMaxScale = mInitScale * 4;
-        mCenterScale = mInitScale * 2;
+        slowScale(mInitScale * scale);
     }
 
 }

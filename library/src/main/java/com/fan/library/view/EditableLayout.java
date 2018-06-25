@@ -48,7 +48,7 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         findViewById(R.id.img_clip_complete).setOnClickListener(this);
         findViewById(R.id.img_clip_close).setOnClickListener(this);
         findViewById(R.id.tv_complete).setOnClickListener(this);
-
+        findViewById(R.id.tv_cancel).setOnClickListener(this);
         setEditColor(mColorSelector.getColor());
         mColorSelector.setOnColorChangeListener(new ColorSelectView.OnColorChangeListener() {
             @Override
@@ -189,6 +189,9 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
         }
         if (v.getId() == R.id.tv_complete) {
             process();
+        }
+        if (v.getId() == R.id.tv_cancel) {
+            mTop.animate().alpha(0).setDuration(100).start();
         }
     }
 
