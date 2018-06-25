@@ -251,7 +251,7 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            //fling(e1, e2, velocityX, velocityY);
+           // fling(e1, e2, velocityX, velocityY);
             return super.onFling(e1, e2, velocityX, velocityY);
         }
 
@@ -260,18 +260,40 @@ public class ScaleImageView extends ImageView {
     private void fling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 
         RectF rectF = getMatrixRectF();
-        if (rectF.width() < getWidth() && rectF.height() < getHeight()) return;
-        int startX = -Math.round(rectF.left);
-        int startY = -Math.round(rectF.top);
+        if (rectF.width() <= getWidth() && rectF.height() <= getHeight()) return;
+        int startX = (int) e1.getX();
+        int startY = (int) e1.getY();
+        mLastFlingX = startX;
+        mLastFlingY = startY;
         int minX, minY, maxX, maxY;
-        maxX = Math.round(rectF.width() - getWidth());
+
         minX = 0;
         minY = 0;
-        maxY = Math.round(rectF.height() - getHeight());
+
+        maxX = (int) (rectF.right - getWidth());
+        maxY = (int) (rectF.bottom - getHeight());
+        Log.e("main", "max  " + maxX);
         mScroller.fling(startX, startY, (int) velocityX, (int) velocityY, minX, maxX, minY, maxY);
-        invalidate();
     }
 
+    private int mLastFlingX, mLastFlingY;
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        if (mScroller.computeScrollOffset()) {
+            int curX = mScroller.getCurrX();
+            //Log.e("main", "cur  " + curX);
+            int curY = mScroller.getCurrY();
+            int dx = curX - mLastFlingX;
+            int dy = curY - mLastFlingY;
+            Log.e("main", "dx  " + dx + "  dy " + dy);
+            matrix.postTranslate(dx, dy);
+            mLastFlingX = curX;
+            mLastFlingY = curY;
+            setImageMatrix(matrix);
+        }
+    }
 
     private boolean isInitScale;
 
@@ -386,12 +408,11 @@ public class ScaleImageView extends ImageView {
 //            float scaleH = (float) height / (float) dh;
 //            mInitScale = Math.min(scaleH, scaleW);
 //        }
-//        if (dh > height && dw > width) {
-//
-//        }
         float scaleW = (float) width / (float) dw;
         float scaleH = (float) height / (float) dh;
+        if (dh > height && dw > width) {
 
+        }
         mInitScale = Math.min(scaleH, scaleW);
         mMaxScale = mInitScale * 4;
         mCenterScale = mInitScale * 2;

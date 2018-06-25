@@ -276,11 +276,14 @@ public class PreviewActivity extends Activity {
                 isShow = false;
                 getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 mTopBar.animate().translationYBy(-mTopBar.getHeight()).setDuration(200).start();
-                mBottomBar.animate().alpha(0).setDuration(200).start();
+                //mBottomBar.animate().alpha(0).setDuration(200).start();
+                mBottomBar.setAlpha(0);
+                mBottomBar.setVisibility(View.GONE);
             } else {
                 isShow = true;
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                 mTopBar.animate().translationYBy(mTopBar.getHeight()).setDuration(200).start();
+                mBottomBar.setVisibility(View.VISIBLE);
                 mBottomBar.animate().alpha(0.8f).setDuration(200).start();
             }
             initTop();

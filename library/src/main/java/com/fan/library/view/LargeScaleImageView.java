@@ -18,7 +18,7 @@ import android.view.ViewTreeObserver;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class LargeScaleImageView extends ScaleImageView {
+public class LargeScaleImageView extends EditImageView {
     private BitmapRegionDecoder mDecoder;
     private Rect mImageRect;
     private BitmapFactory.Options mOptions;
@@ -68,9 +68,8 @@ public class LargeScaleImageView extends ScaleImageView {
 
     @Override
     protected void onScroll(float distanceX, float distanceY) {
-        Log.e("main", "rect  " + mImageRect.toString());
+        //super.onScroll();
         mImageRect.offset((int) distanceX, (int) distanceY);
-
         setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
     }
 

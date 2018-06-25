@@ -32,13 +32,12 @@ public class Utils {
         return path.endsWith("gif");
     }
 
-    public static boolean isLongImage(Context context, String path) {
-        int width = context.getResources().getDisplayMetrics().widthPixels;
-        int height = context.getResources().getDisplayMetrics().heightPixels;
+    public static boolean isLongImage(int width, int height, String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
-        return options.outWidth > width || options.outHeight > height;
+        //款或者高 大于1.5倍 我们认为 这是一个大图
+        return (options.outWidth > width || options.outHeight > height) &&
+                (0.5f > width / height || width / height > 2.0f);
     }
-
 }
