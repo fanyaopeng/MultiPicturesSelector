@@ -32,12 +32,12 @@ public class Utils {
         return path.endsWith("gif");
     }
 
-    public static boolean isLongImage(int width, int height, String path) {
+    public static boolean isLongImage(int width,  String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
-        //款或者高 大于1.5倍 我们认为 这是一个大图
-        return (options.outWidth > width || options.outHeight > height) &&
-                (0.5f > width / height || width / height > 2.0f);
+        //宽比大于0.3 或者大于2.0 则认为是长图
+        float radio = (float) options.outWidth / (float) options.outHeight;
+        return options.outWidth >=width && 0.5f > radio;
     }
 }

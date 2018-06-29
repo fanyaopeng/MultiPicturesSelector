@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
@@ -18,7 +20,7 @@ import android.view.ViewTreeObserver;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class LargeScaleImageView extends EditImageView {
+public class LargeScaleImageView extends ScaleImageView {
     private BitmapRegionDecoder mDecoder;
     private Rect mImageRect;
     private BitmapFactory.Options mOptions;
@@ -66,33 +68,41 @@ public class LargeScaleImageView extends EditImageView {
         }
     }
 
+//    @Override
+//    protected void onDraw(Canvas canvas) {
+//        super.onDraw(canvas);
+//        canvas.drawBitmap(mDecoder.decodeRegion(mImageRect, mOptions), 0, 0, null);
+//    }
+
     @Override
     protected void onScroll(float distanceX, float distanceY) {
         //super.onScroll();
+        Log.e("main", "range  " + mImageRect);
+
+        Log.e("main", "width  " + mImageWidth + "  height  " + mImageHeight);
         mImageRect.offset((int) distanceX, (int) distanceY);
+        checkSelf();
         setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
+       // invalidate();
     }
 
-    @Override
-    protected void checkBorder() {
-        //super.checkBorder();
-
+    private void checkSelf() {
         if (mImageRect.left < 0) {
             //左越界
-            mImageRect.offsetTo(0, mImageRect.top);
+            mImageRect.offset(-mImageRect.left, 0);
         }
+
         if (mImageRect.right > mImageWidth) {
             //右越界
-            mImageRect.offsetTo(0, mImageRect.top);
+            mImageRect.offset(mImageWidth - mImageRect.right, 0);
         }
         if (mImageRect.top < 0) {
             //上越界
-            mImageRect.offsetTo(mImageRect.left, 0);
+            mImageRect.offset(0, -mImageRect.top);
         }
         if (mImageRect.bottom > mImageHeight) {
             //下越界
-            mImageRect.offsetTo(mImageRect.left, mImageHeight - getHeight());
+            mImageRect.offset(0, mImageHeight - mImageRect.bottom);
         }
-        setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
     }
 }

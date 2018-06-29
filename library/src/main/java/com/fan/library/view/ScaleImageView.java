@@ -18,6 +18,9 @@ import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
+/**
+ * 遗留问题 是否可以解决惯性滑动  是否可以支持长图   是否可以支持旋转手势
+ */
 public class ScaleImageView extends ImageView {
     protected Matrix matrix;
     private GestureDetector mGestureDetector;

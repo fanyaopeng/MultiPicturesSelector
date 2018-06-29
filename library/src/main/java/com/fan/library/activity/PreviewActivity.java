@@ -26,6 +26,7 @@ import com.fan.library.utils.DisplayImageTask;
 import com.fan.library.utils.Utils;
 import com.fan.library.view.CheckImageView;
 import com.fan.library.view.GifImageView;
+import com.fan.library.view.LargeScaleImageView;
 import com.fan.library.view.ScaleImageView;
 
 import java.util.ArrayList;
@@ -176,10 +177,16 @@ public class PreviewActivity extends Activity {
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
             String p = paths.get(position);
             View result;
-            if (!Utils.isGif(p)) {
+            if (Utils.isLongImage(mPreviewVp.getWidth(), p)) {
+                LargeScaleImageView imageView = new LargeScaleImageView(PreviewActivity.this);
+                imageView.setImagePath(p);
+                container.addView(imageView);
+                result = imageView;
+                imageView.setOnGestureListener(new HandleSingleTap());
+            } else if (!Utils.isGif(p)) {
                 ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
-                //service.execute(new DisplayImageTask(this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
-                imageView.setImageBitmap(Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                service.execute(new DisplayImageTask(PreviewActivity.this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                //imageView.setImageBitmap(Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
                 container.addView(imageView);
                 result = imageView;
                 imageView.setOnGestureListener(new HandleSingleTap());
