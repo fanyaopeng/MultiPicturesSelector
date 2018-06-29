@@ -45,5 +45,5 @@
 	}
  
 	dependencies {
-	        implementation 'com.github.fanyaopeng:MultiPicturesSelector:v1.0.3'
+	        implementation 'com.github.fanyaopeng:MultiPicturesSelector:v1.0.4'
 	}
