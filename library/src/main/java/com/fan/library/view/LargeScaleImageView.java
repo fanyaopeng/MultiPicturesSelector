@@ -77,9 +77,9 @@ public class LargeScaleImageView extends ScaleImageView {
     @Override
     protected void onScroll(float distanceX, float distanceY) {
         //super.onScroll();
-        Log.e("main", "range  " + mImageRect);
-
-        Log.e("main", "width  " + mImageWidth + "  height  " + mImageHeight);
+//        Log.e("main", "range  " + mImageRect);
+//
+//        Log.e("main", "width  " + mImageWidth + "  height  " + mImageHeight);
         mImageRect.offset((int) distanceX, (int) distanceY);
         checkSelf();
         setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
