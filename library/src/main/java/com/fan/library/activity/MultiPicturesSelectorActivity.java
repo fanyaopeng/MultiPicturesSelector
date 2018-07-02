@@ -23,6 +23,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -151,7 +152,6 @@ public class MultiPicturesSelectorActivity extends Activity {
 
 
     private void selectType() {
-
         if (mDirList.getTranslationY() == 0) {
             //目前显示中
             animHide();
@@ -348,16 +348,28 @@ public class MultiPicturesSelectorActivity extends Activity {
 
                 mDirList.setLayoutManager(new LinearLayoutManager(MultiPicturesSelectorActivity.this));
                 mDirList.setAdapter(new DirsAdapter());
-                RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mDirList.getLayoutParams();
-                int mTranslateSize = mContainer.getHeight() * 7 / 8;
-                params.height = mTranslateSize;
-                mDirList.setLayoutParams(params);
-                mDirList.setTranslationY(mTranslateSize);
+                initDirPos();
                 return true;
             }
             return false;
         }
     });
+
+    private void initDirPos() {
+
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mDirList.getLayoutParams();
+        mDirList.measure(0, 0);
+        int realHeight = mDirList.getMeasuredHeight();
+        int maxHeight = mContainer.getHeight() * 7 / 8;
+        if (realHeight > maxHeight) {
+            params.height = maxHeight;
+            mDirList.setTranslationY(maxHeight);
+        } else {
+            params.height = -2;
+            mDirList.setTranslationY(realHeight);
+        }
+        mDirList.setLayoutParams(params);
+    }
 
     private class PicturesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private int TYPE_CAMERA = 5000;
@@ -448,7 +460,7 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         @Override
         public int getItemCount() {
-            return Config.get().isOpenCamera?mSelectDirsPictures.size()+1:mSelectDirsPictures.size();
+            return Config.get().isOpenCamera ? mSelectDirsPictures.size() + 1 : mSelectDirsPictures.size();
         }
 
         public class CameraVH extends RecyclerView.ViewHolder {
