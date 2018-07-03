@@ -78,7 +78,16 @@ public class ScaleImageView extends ImageView {
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
-        return Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height());
+        //经过缩放的图片的范围 可能是小于0的
+        int left = rect.left;
+        int top = rect.top;
+        int width = rect.width();
+        int height = rect.height();
+        if (left < 0) left = 0;
+        if (top < 0) top = 0;
+        if (width > getWidth()) width = getWidth();
+        if (height > getHeight()) height = getHeight();
+        return Bitmap.createBitmap(bitmap, left, top, width, height);
     }
 
     public interface OnGestureListener {
