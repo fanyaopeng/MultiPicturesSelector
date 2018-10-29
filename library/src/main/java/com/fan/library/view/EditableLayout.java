@@ -1,5 +1,6 @@
 package com.fan.library.view;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -199,7 +200,8 @@ public class EditableLayout extends FrameLayout implements ClipShapeView.OnScrol
             process();
         }
         if (v.getId() == R.id.tv_cancel) {
-            mTop.animate().alpha(0).setDuration(100).start();
+            Activity activity = (Activity) getContext();
+            activity.finish();
         }
     }
 
