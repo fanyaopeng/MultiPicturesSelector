@@ -14,7 +14,6 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import android.view.ViewConfiguration;
 import android.widget.ImageView;
 import android.widget.Scroller;
 
@@ -30,7 +29,6 @@ public class ScaleImageView extends ImageView {
     private ScaleGestureDetector mScaleGestureDetector;
     private Scroller mScroller;
     protected float[] mScaleFocus = new float[2];
-    private float mTouchSlop;
 
     public ScaleImageView(Context context) {
         this(context, null);
@@ -45,7 +43,6 @@ public class ScaleImageView extends ImageView {
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleCallback());
         matrix = getImageMatrix();
         mScroller = new Scroller(context);
-        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
     }
 
     @Override
@@ -60,17 +57,6 @@ public class ScaleImageView extends ImageView {
         }
         return true;
     }
-//
-//    private boolean isInEidt;
-//
-//    public void setInEditStatus(boolean isInEdit) {
-//        this.isInEidt = isInEdit;
-//    }
-//    private int mEditColor;
-//
-//    public void setEditColor(@ColorInt int color) {
-//        mEditColor = color;
-//    }
 
     private OnGestureListener mGestureListener;
 
@@ -243,10 +229,13 @@ public class ScaleImageView extends ImageView {
         }
 
         @Override
+        public boolean onDown(MotionEvent e) {
+
+            return super.onDown(e);
+        }
+
+        @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (Math.abs(distanceX) < mTouchSlop && Math.abs(distanceY) < mTouchSlop) {
-                return true;
-            }
             if (isScale) return true;//滑动的时候 如果在缩放 则 无操作
             ScaleImageView.this.onScroll(distanceX, distanceY);
             return false;
