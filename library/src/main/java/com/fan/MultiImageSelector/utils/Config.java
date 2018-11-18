@@ -1,10 +1,9 @@
-package com.fan.library.utils;
+package com.fan.MultiImageSelector.utils;
 
 public class Config {
     public int maxNum = 9;
     public int minMum = 0;
     public boolean isOpenClip = true;
-    public boolean isOpenEdit = true;
     public boolean isOpenCamera = true;
     private static Config sConfig;
     private static Object lock = new Object();
@@ -35,9 +34,5 @@ public class Config {
 
     public void setOpenClip(boolean openClip) {
         isOpenClip = openClip;
-    }
-
-    public void setOpenEdit(boolean openEdit) {
-        isOpenEdit = openEdit;
     }
 }

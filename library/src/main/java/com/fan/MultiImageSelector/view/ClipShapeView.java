@@ -1,9 +1,8 @@
-package com.fan.library.view;
+package com.fan.MultiImageSelector.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
@@ -14,7 +13,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.fan.library.utils.Utils;
+import com.fan.MultiImageSelector.utils.Utils;
 
 public class ClipShapeView extends View {
     private Paint mPaint;
@@ -26,14 +25,13 @@ public class ClipShapeView extends View {
     private float mCornerSize;
 
     private final int LEFT_TOP = 0;
-    private final int RIGHT_TOP = 1;
-    private final int RIGHT_BOTTOM = 2;
-    private final int LEFT_BOTTOM = 3;
+    private final int LEFT_BOTTOM = 1;
+    private final int RIGHT_TOP = 2;
+    private final int RIGHT_BOTTOM = 3;
     private final int NO_SCROLL = -1;
     private int mCurScrollRange = NO_SCROLL;
-    int mPadding;
     int mProfileWidth;
-    private RectF mSrc;//初始的范围
+    private RectF mRange;//初始的范围
 
     public ClipShapeView(Context context) {
         this(context, null);
@@ -50,19 +48,6 @@ public class ClipShapeView extends View {
         mCornerSize = Utils.dp2px(getContext(), 30);
         mCornerWidth = Utils.dp2px(getContext(), 2.5f);
         mProfileWidth = Utils.dp2px(getContext(), 1.5f);
-        mPadding = mProfileWidth / 2;
-    }
-
-    public void rotate(int degree) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(degree);
-        RectF rectF = new RectF(mProfile);
-        matrix.mapRect(rectF);
-        mLeft = rectF.left;
-        mTop = rectF.top;
-        mRight = rectF.right;
-        mBottom = rectF.bottom;
-        invalidate();
     }
 
     private class ScrollCallback extends GestureDetector.SimpleOnGestureListener {
@@ -125,19 +110,19 @@ public class ClipShapeView extends View {
     }
 
     private void checkBorder(float dx, float dy) {
-        RectF rectF = new RectF(mSrc);
+        RectF rectF = new RectF(mRange);
         if (dy < 0) {
             //往下
-            if (mBottom > rectF.bottom - mPadding) {
-                mBottom = rectF.bottom - mPadding;
+            if (mBottom > rectF.bottom) {
+                mBottom = rectF.bottom;
             }
             if (mProfile.height() < mCornerSize * 2) {
                 mTop = mBottom - 2 * mCornerSize;
             }
         } else if (dy > 0) {
             //a往上
-            if (mTop < rectF.top - mPadding) {
-                mTop = rectF.top - mPadding;
+            if (mTop < rectF.top) {
+                mTop = rectF.top;
             }
             if (mProfile.height() < mCornerSize * 2) {
                 mBottom = mTop + 2 * mCornerSize;
@@ -147,16 +132,16 @@ public class ClipShapeView extends View {
 
         if (dx < 0) {
             //往右
-            if (mRight > mSrc.right + mPadding) {
-                mRight = mSrc.right + mPadding;
+            if (mRight > mRange.right) {
+                mRight = mRange.right;
             }
             if (mProfile.width() < mCornerSize * 2) {
                 mLeft = mRight - 2 * mCornerSize;
             }
         } else if (dx > 0) {
             //左
-            if (mLeft < mSrc.left - mPadding) {
-                mLeft = mSrc.left - mPadding;
+            if (mLeft < mRange.left) {
+                mLeft = mRange.left;
             }
             if (mProfile.width() < mCornerSize * 2) {
                 mRight = mLeft + 2 * mCornerSize;
@@ -165,14 +150,7 @@ public class ClipShapeView extends View {
     }
 
     public void setRange(RectF rectF) {
-        float targetWidth = rectF.width();
-        float targetHeight = rectF.height();
-        rectF.left = (getWidth() - targetWidth) / 2;
-        rectF.right = rectF.left + targetWidth;
-        rectF.top = (getHeight() - targetHeight) / 2;
-        rectF.bottom = rectF.top + targetHeight;
-
-        mSrc = new RectF(rectF);
+        mRange = new RectF(rectF);
         mLeft = rectF.left;
         mTop = rectF.top;
         mRight = rectF.right;
@@ -183,34 +161,14 @@ public class ClipShapeView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (mCurScrollRange != NO_SCROLL) {
-                postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mOnScrollStopListener != null)
-                            mOnScrollStopListener.onScrollStop(mProfile);
-                    }
-                }, 1000);
-            }
-        }
         return mDetector.onTouchEvent(event);
     }
 
-    //
-    public interface OnScrollStopListener {
-        void onScrollStop(RectF rect);
-    }
-
-    private OnScrollStopListener mOnScrollStopListener;
-
-    public void setOnScrollStopListener(OnScrollStopListener listener) {
-        mOnScrollStopListener = listener;
-    }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        if (mRange == null) return;
         //四角
         drawCorner(canvas);
         //框
@@ -224,11 +182,10 @@ public class ClipShapeView extends View {
     private void drawProfile(Canvas canvas) {
         mPaint.setStrokeWidth(mProfileWidth);
         //移动四角线宽
-        float offset = mProfileWidth / 2;
-        float left = mLeft - offset;
-        float top = mTop - offset;
-        float right = mRight + offset;
-        float bottom = mBottom + offset;
+        float left = mLeft;
+        float top = mTop;
+        float right = mRight;
+        float bottom = mBottom;
         mProfile = new RectF(left, top, right, bottom);
         canvas.drawRect(mProfile, mPaint);
     }
@@ -262,7 +219,7 @@ public class ClipShapeView extends View {
 
         Path path = new Path();
 
-        int offset = mProfileWidth + mCornerWidth / 2;
+        int offset = mProfileWidth / 2;
         canvas.drawPath(path, mPaint);
         float left = mLeft - offset;
         float top = mTop - offset;
@@ -293,11 +250,6 @@ public class ClipShapeView extends View {
 
     public RectF getCurRange() {
         if (mProfile == null) return null;
-        float offset = mProfileWidth / 2;
-        float left = mProfile.left + offset;
-        float top = mProfile.top + offset;
-        float right = mProfile.right - offset;
-        float bottom = mProfile.bottom - offset;
-        return new RectF(left, top, right, bottom);
+        return new RectF(mLeft, mTop, mRight, mBottom);
     }
 }

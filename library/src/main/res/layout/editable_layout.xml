@@ -5,27 +5,15 @@
     android:background="@android:color/black"
     android:orientation="vertical">
 
-    <com.fan.library.view.EditImageView
+    <com.fan.MultiImageSelector.view.ScaleImageView
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.fan.library.view.ClipShapeView
+    <com.fan.MultiImageSelector.view.ClipShapeView
         android:id="@+id/shape"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible" />
-
-    <com.fan.library.view.ColorSelectView
-        android:id="@+id/color_selector"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="44dp"
-        android:background="@color/shadow"
-        android:visibility="gone">
-
-    </com.fan.library.view.ColorSelectView>
+        android:layout_height="match_parent" />
 
     <RelativeLayout
         android:id="@+id/rel_top"
@@ -53,35 +41,4 @@
             android:text="完成"
             android:textColor="@color/green" />
     </RelativeLayout>
-
-    <LinearLayout
-        android:id="@+id/clip_root"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp">
-
-            <ImageView
-                android:id="@+id/img_clip_close"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:src="@mipmap/ic_close" />
-
-            <ImageView
-                android:id="@+id/img_clip_complete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:src="@mipmap/ic_edit_complete" />
-        </RelativeLayout>
-    </LinearLayout>
 </FrameLayout>

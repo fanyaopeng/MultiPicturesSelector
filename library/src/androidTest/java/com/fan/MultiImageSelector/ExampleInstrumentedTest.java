@@ -1,4 +1,4 @@
-package com.fan.library;
+package com.fan.MultiImageSelector;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

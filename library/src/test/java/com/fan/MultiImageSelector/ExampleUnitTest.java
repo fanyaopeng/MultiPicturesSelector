@@ -1,4 +1,4 @@
-package com.fan.library;
+package com.fan.MultiImageSelector;
 
 import org.junit.Test;
 

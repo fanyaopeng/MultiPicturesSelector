@@ -1,33 +1,28 @@
-package com.fan.library.utils;
+package com.fan.MultiImageSelector.utils;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
-import android.util.Log;
-import android.widget.ImageView;
 
-import com.fan.library.cache.DoubleImageCache;
-import com.fan.library.cache.ImageCache;
+import com.fan.MultiImageSelector.cache.MemoryImageCache;
+import com.fan.MultiImageSelector.cache.ImageCache;
 
-public class DisplayImageTask implements Runnable {
-    private Activity mHost;
+public class CompressImageTask implements Runnable {
     private String mPath;
-    private ImageView mTarget;
     private ImageCache mCache;
     private int mWidth;
     private int mHeight;
+    private OnCompressListener mListener;
 
-    public DisplayImageTask(Activity host, String path, ImageView target, int width, int height) {
-        this.mHost = host;
+    public CompressImageTask(String path, int width, int height, OnCompressListener listener) {
         this.mPath = path;
-        this.mTarget = target;
         this.mWidth = width;
         this.mHeight = height;
-        mTarget.setScaleX(0);
-        mCache = new DoubleImageCache(host);
+        mCache = new MemoryImageCache();
+        mListener = listener;
     }
 
     @Override
     public void run() {
+        if (mListener != null) mListener.onStart();
         Bitmap bitmap = mCache.get(mPath);
         boolean isSize = false;
         if (bitmap != null) {
@@ -40,13 +35,12 @@ public class DisplayImageTask implements Runnable {
             bitmap = Utils.compress(mPath, mWidth, mHeight);
             mCache.put(mPath, bitmap);
         }
-        final Bitmap finalBitmap = bitmap;
-        mHost.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mTarget.setImageBitmap(finalBitmap);
-                mTarget.setScaleX(1);
-            }
-        });
+        if (mListener != null) mListener.onComplete(bitmap);
+    }
+
+    public interface OnCompressListener {
+        void onStart();
+
+        void onComplete(Bitmap bitmap);
     }
 }

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fan.library">
+    package="com.fan.MultiImageSelector">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <application>

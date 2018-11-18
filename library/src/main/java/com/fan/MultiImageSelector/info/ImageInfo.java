@@ -1,4 +1,4 @@
-package com.fan.library.info;
+package com.fan.MultiImageSelector.info;
 
 public class ImageInfo {
     private int date;

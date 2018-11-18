@@ -1,4 +1,4 @@
-package com.fan.library.view;
+package com.fan.MultiImageSelector.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;

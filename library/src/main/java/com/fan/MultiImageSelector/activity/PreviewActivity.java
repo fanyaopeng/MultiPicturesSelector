@@ -1,4 +1,4 @@
-package com.fan.library.activity;
+package com.fan.MultiImageSelector.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,7 +10,6 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,14 +19,14 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.fan.library.R;
-import com.fan.library.utils.Config;
-import com.fan.library.utils.DisplayImageTask;
-import com.fan.library.utils.Utils;
-import com.fan.library.view.CheckImageView;
-import com.fan.library.view.GifImageView;
-import com.fan.library.view.LargeScaleImageView;
-import com.fan.library.view.ScaleImageView;
+import com.fan.MultiImageSelector.R;
+import com.fan.MultiImageSelector.utils.Config;
+import com.fan.MultiImageSelector.utils.CompressImageTask;
+import com.fan.MultiImageSelector.utils.Utils;
+import com.fan.MultiImageSelector.view.CheckImageView;
+import com.fan.MultiImageSelector.view.GifImageView;
+import com.fan.MultiImageSelector.view.LargeScaleImageView;
+import com.fan.MultiImageSelector.view.ScaleImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +40,6 @@ public class PreviewActivity extends Activity {
     private LinearLayout mBottomBar;
     private TextView tvTitle;
     private RecyclerView mThumbList;
-    private TextView tvEdit;
     private List<Boolean> mCheckPath;
     private CheckImageView mCheckView;
 
@@ -74,32 +72,27 @@ public class PreviewActivity extends Activity {
         mBottomBar.setAlpha(0.8f);
         mThumbList = findViewById(R.id.thumb_list);
         tvTitle = findViewById(R.id.title);
-        tvEdit = findViewById(R.id.tv_edit);
         mCheckView = findViewById(R.id.ck);
         mCheckView.setChecked(true);
-        Config config = Config.get();
-        if (!config.isOpenClip && !config.isOpenEdit) {
-            mBottomBar.setVisibility(View.GONE);
-        }
     }
 
     public void complete(View view) {
-        Intent intent = new Intent();
+        if (Config.get().isOpenClip) {
+            Intent intent = new Intent(this, EditImageViewActivity.class);
+            intent.putExtra("path", paths.get(mPreviewVp.getCurrentItem()));
+            startActivityForResult(intent, requestEdit);
+            return;
+        }
         List<String> result = new ArrayList<>();
         for (int i = 0; i < mCheckPath.size(); i++) {
             if (mCheckPath.get(i)) {
                 result.add(paths.get(i));
             }
         }
+        Intent intent = new Intent();
         intent.putStringArrayListExtra("paths", (ArrayList<String>) result);
         setResult(RESULT_OK, intent);
         finish();
-    }
-
-    public void edit(View view) {
-        Intent intent = new Intent(PreviewActivity.this, EditImageViewActivity.class);
-        intent.putExtra("path", paths.get(mPreviewVp.getCurrentItem()));
-        startActivityForResult(intent, requestEdit);
     }
 
     private int requestEdit = 1;
@@ -114,7 +107,6 @@ public class PreviewActivity extends Activity {
                 ScaleImageView image = (ScaleImageView) mPreviewVp.getChildAt(mPreviewVp.getCurrentItem());
                 Bitmap result = Utils.compress(path, mPreviewVp.getWidth(), mPreviewVp.getHeight());
                 image.setImageBitmap(result);
-                //mPreViewImages.set(mPreviewVp.getCurrentItem(), image);
                 mPreviewVp.getAdapter().notifyDataSetChanged();
                 mThumbList.getAdapter().notifyItemChanged(mPreviewVp.getCurrentItem());
             }
@@ -136,11 +128,6 @@ public class PreviewActivity extends Activity {
                 tvTitle.setText(position + 1 + "/" + paths.size());
                 ThumbAdapter adapter = (ThumbAdapter) mThumbList.getAdapter();
                 adapter.setSelectPos(position);
-                if (Utils.isGif(paths.get(position))) {
-                    tvEdit.setVisibility(View.GONE);
-                } else {
-                    tvEdit.setVisibility(View.VISIBLE);
-                }
                 mCheckView.setChecked(mCheckPath.get(position));
                 mThumbList.scrollToPosition(position);
             }
@@ -184,9 +171,22 @@ public class PreviewActivity extends Activity {
                 result = imageView;
                 imageView.setOnGestureListener(new HandleSingleTap());
             } else if (!Utils.isGif(p)) {
-                ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
-                service.execute(new DisplayImageTask(PreviewActivity.this, p, imageView, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
-                //imageView.setImageBitmap(Utils.compress(p, mPreviewVp.getWidth(), mPreviewVp.getHeight()));
+                final ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
+                service.execute(new CompressImageTask(p, mPreviewVp.getWidth(), mPreviewVp.getHeight(), new CompressImageTask.OnCompressListener() {
+                    @Override
+                    public void onStart() {
+                    }
+
+                    @Override
+                    public void onComplete(final Bitmap bitmap) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                imageView.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
+                }));
                 container.addView(imageView);
                 result = imageView;
                 imageView.setOnGestureListener(new HandleSingleTap());
@@ -238,7 +238,22 @@ public class PreviewActivity extends Activity {
         @Override
         public void onBindViewHolder(final VH holder, int position) {
             int size = Utils.dp2px(PreviewActivity.this, 70);
-            service.execute(new DisplayImageTask(PreviewActivity.this, paths.get(position), holder.image, size, size));
+            service.execute(new CompressImageTask(paths.get(position), size, size, new CompressImageTask.OnCompressListener() {
+                @Override
+                public void onStart() {
+
+                }
+
+                @Override
+                public void onComplete(final Bitmap bitmap) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            holder.image.setImageBitmap(bitmap);
+                        }
+                    });
+                }
+            }));
             final RelativeLayout root = (RelativeLayout) holder.itemView;
             if (position == mSelectPos) holder.border.setVisibility(View.VISIBLE);
             else holder.border.setVisibility(View.INVISIBLE);

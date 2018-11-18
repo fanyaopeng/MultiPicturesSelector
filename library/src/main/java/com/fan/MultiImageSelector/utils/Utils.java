@@ -1,8 +1,9 @@
-package com.fan.library.utils;
+package com.fan.MultiImageSelector.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.util.TypedValue;
 
 import java.io.File;
@@ -32,12 +33,12 @@ public class Utils {
         return path.endsWith("gif");
     }
 
-    public static boolean isLongImage(int width,  String path) {
+    public static boolean isLongImage(int width, String path) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, options);
         //宽比大于0.3 或者大于2.0 则认为是长图
         float radio = (float) options.outWidth / (float) options.outHeight;
-        return options.outWidth >=width && 0.5f > radio;
+        return options.outWidth >= width && 0.5f > radio;
     }
 }

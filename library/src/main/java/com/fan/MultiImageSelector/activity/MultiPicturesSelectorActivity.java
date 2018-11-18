@@ -1,4 +1,4 @@
-package com.fan.library.activity;
+package com.fan.MultiImageSelector.activity;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -7,10 +7,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +25,6 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,13 +36,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.fan.library.utils.Config;
-import com.fan.library.utils.DisplayImageTask;
-import com.fan.library.R;
-import com.fan.library.utils.Utils;
-import com.fan.library.info.Folder;
-import com.fan.library.info.ImageInfo;
-import com.fan.library.view.CheckImageView;
+import com.fan.MultiImageSelector.utils.Config;
+import com.fan.MultiImageSelector.utils.CompressImageTask;
+import com.fan.MultiImageSelector.R;
+import com.fan.MultiImageSelector.utils.Utils;
+import com.fan.MultiImageSelector.info.Folder;
+import com.fan.MultiImageSelector.info.ImageInfo;
+import com.fan.MultiImageSelector.view.CheckImageView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -60,7 +61,6 @@ public class MultiPicturesSelectorActivity extends Activity {
     private PicturesAdapter mPictureAdapter;
     private ExecutorService mService;
     public int mItemSize;
-    private int mItemMargin;
     private List<String> mCheckPaths = new ArrayList<>();
     private TextView tvPreviewNum;
     private RecyclerView mDirList;
@@ -69,8 +69,10 @@ public class MultiPicturesSelectorActivity extends Activity {
     private TextView tvCurDir;
     private int mMaxNum;
     private TextView tvComplete;
+    private int mItemMargin;
 
     @Override
+
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_multi_pictures_selector);
@@ -82,13 +84,13 @@ public class MultiPicturesSelectorActivity extends Activity {
     }
 
     private void initView() {
+        mItemMargin = Utils.dp2px(MultiPicturesSelectorActivity.this, 2);
+        mItemSize = (getResources().getDisplayMetrics().widthPixels - 3 * mItemMargin) / 4;
         mList = findViewById(R.id.list);
         mDirList = findViewById(R.id.dir_list);
         mList.setLayoutManager(new GridLayoutManager(this, 4));
         mList.addItemDecoration(new Decoration());
         mService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        mItemMargin = Utils.dp2px(this, 2);
-        mItemSize = (getWidth() - mItemMargin * 5) / 4;
         tvPreviewNum = findViewById(R.id.tv_preview_num);
         mShadow = findViewById(R.id.shadow);
         mContainer = findViewById(R.id.rel_container);
@@ -217,22 +219,47 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         @Override
         public void onBindViewHolder(final VH holder, final int position) {
-            ImageView preview = holder.preview;
-            FrameLayout imgParent = (FrameLayout) preview.getParent();
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) imgParent.getLayoutParams();
-            params.width = size;
-            params.height = size;
+            final ImageView preview = holder.preview;
             if (holder.getItemViewType() == -1) {
                 holder.tvName.setText(type_all);
                 holder.tvNum.setText(mAllPictures.size() + "张");
-                mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
-                        mAllPictures.get(0).getPath(), preview, size, size));
+                mService.submit(new CompressImageTask(mAllPictures.get(0).getPath(), size, size, new CompressImageTask.OnCompressListener() {
+                    @Override
+                    public void onStart() {
+
+                    }
+
+                    @Override
+                    public void onComplete(final Bitmap bitmap) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                preview.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
+                }));
             } else {
                 String parentPath = mAllDirs.get(position).getPath();
                 int index = parentPath.lastIndexOf(File.separator);
                 holder.tvName.setText(parentPath.substring(index + 1));
-                mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
-                        mAllDirs.get(position).getImageInfos().get(0).getPath(), preview, size, size));
+                mService.submit(new CompressImageTask(mAllDirs.get(position).getImageInfos().get(0).getPath(), size, size, new CompressImageTask.OnCompressListener() {
+                    @Override
+                    public void onStart() {
+
+                    }
+
+                    @Override
+                    public void onComplete(final Bitmap bitmap) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                preview.setImageBitmap(bitmap);
+                            }
+                        });
+
+                    }
+                }));
                 holder.tvNum.setText(mAllDirs.get(position).getImageInfos().size() + "张");
             }
             if (tvCurDir.getText().equals(type_all)) {
@@ -392,12 +419,8 @@ public class MultiPicturesSelectorActivity extends Activity {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder vh, final int position) {
-
             if (vh.getItemViewType() == TYPE_CAMERA) {
                 CameraVH holder = (CameraVH) vh;
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.cameraRoot.getLayoutParams();
-                params.width = mItemSize;
-                params.height = mItemSize;
                 holder.camera.setImageResource(R.mipmap.ic_camera);
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -415,15 +438,28 @@ public class MultiPicturesSelectorActivity extends Activity {
                 });
             } else {
                 final PictureVH holder = (PictureVH) vh;
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) holder.root.getLayoutParams();
-                params.width = mItemSize;
-                params.height = mItemSize;
-                ImageView img = holder.img;
+                final ImageView img = holder.img;
                 int realPos = position;
                 if (Config.get().isOpenCamera) realPos = position - 1;
                 final String path = mSelectDirsPictures.get(realPos).getPath();
-                mService.submit(new DisplayImageTask(MultiPicturesSelectorActivity.this,
-                        path, img, mItemSize, mItemSize));
+                img.setImageDrawable(new ColorDrawable(Color.BLACK));
+                mService.submit(new CompressImageTask(
+                        path, mItemSize, mItemSize, new CompressImageTask.OnCompressListener() {
+                    @Override
+                    public void onStart() {
+
+                    }
+
+                    @Override
+                    public void onComplete(final Bitmap bitmap) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                img.setImageBitmap(bitmap);
+                            }
+                        });
+                    }
+                }));
                 holder.tvImageType.setVisibility(Utils.isGif(path) ? View.VISIBLE : View.GONE);
                 holder.ck.setChecked(mCheckPaths.contains(path));
                 holder.shadow.setVisibility(holder.ck.isChecked() ? View.VISIBLE : View.GONE);
@@ -544,6 +580,11 @@ public class MultiPicturesSelectorActivity extends Activity {
     }
 
     private class Decoration extends RecyclerView.ItemDecoration {
+
+        public Decoration() {
+
+        }
+
         @Override
         public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
             super.onDraw(c, parent, state);
@@ -553,6 +594,7 @@ public class MultiPicturesSelectorActivity extends Activity {
         @Override
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
             super.getItemOffsets(outRect, view, parent, state);
+            int position = parent.getChildLayoutPosition(view);
             outRect.set(0, 0, mItemMargin, mItemMargin);
         }
     }

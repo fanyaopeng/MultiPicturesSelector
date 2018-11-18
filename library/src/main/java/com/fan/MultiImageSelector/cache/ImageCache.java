@@ -1,4 +1,4 @@
-package com.fan.library.cache;
+package com.fan.MultiImageSelector.cache;
 
 import android.graphics.Bitmap;
 

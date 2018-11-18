@@ -90,16 +90,6 @@
             android:layout_height="48dp">
 
             <TextView
-                android:id="@+id/tv_edit"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="12dp"
-                android:gravity="center_vertical"
-                android:onClick="edit"
-                android:text="编辑"
-                android:textColor="@android:color/white" />
-
-            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -115,7 +105,7 @@
                 android:layout_centerVertical="true"
                 android:onClick="onCheckClick">
 
-                <com.fan.library.view.CheckImageView
+                <com.fan.MultiImageSelector.view.CheckImageView
                     android:id="@+id/ck"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -1,4 +1,4 @@
-package com.fan.library.view;
+package com.fan.MultiImageSelector.view;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Checkable;
 import android.widget.ImageView;
 
-import com.fan.library.R;
+import com.fan.MultiImageSelector.R;
 
 public class CheckImageView extends ImageView implements Checkable {
     private boolean isChecked;

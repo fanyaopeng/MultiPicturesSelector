@@ -16,9 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.fan.library.utils.Config;
-import com.fan.library.activity.MultiPicturesSelectorActivity;
-import com.fan.library.utils.Utils;
+import com.fan.MultiImageSelector.utils.Config;
+import com.fan.MultiImageSelector.activity.MultiPicturesSelectorActivity;
+import com.fan.MultiImageSelector.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         config.setMaxNum(15);
         config.setMinMum(1);
         config.isOpenCamera = false;
+        config.isOpenClip = true;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {

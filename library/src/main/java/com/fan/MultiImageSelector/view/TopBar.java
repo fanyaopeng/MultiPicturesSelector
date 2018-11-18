@@ -1,4 +1,4 @@
-package com.fan.library.view;
+package com.fan.MultiImageSelector.view;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.fan.library.R;
+import com.fan.MultiImageSelector.R;
 
 public class TopBar extends RelativeLayout {
     private ImageView back;
