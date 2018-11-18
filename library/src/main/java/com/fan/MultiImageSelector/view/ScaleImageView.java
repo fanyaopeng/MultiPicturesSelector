@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -252,6 +253,7 @@ public class ScaleImageView extends ImageView {
         mFlingTask.fling((int) velocityX, (int) velocityY);
     }
 
+
     FlingTask mFlingTask = new FlingTask();
 
     private class FlingTask implements Runnable {
@@ -297,7 +299,8 @@ public class ScaleImageView extends ImageView {
                 mLastFlingY = curY;
                 mLastFlingX = currX;
                 if (!mScroller.isFinished()) {
-                    postDelayed(this, 10);
+                    removeCallbacks(this);
+                    ViewCompat.postOnAnimation(ScaleImageView.this, this);
                 }
             }
         }
