@@ -243,10 +243,13 @@ public class ScaleImageView extends ImageView {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            mFlingTask.fling((int) velocityX, (int) velocityY);
+            fling(velocityX, velocityY);
             return true;
         }
+    }
 
+    protected void fling(float velocityX, float velocityY) {
+        mFlingTask.fling((int) velocityX, (int) velocityY);
     }
 
     FlingTask mFlingTask = new FlingTask();

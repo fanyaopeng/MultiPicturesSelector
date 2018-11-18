@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewTreeObserver;
+import android.widget.Scroller;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,15 +27,51 @@ public class LargeScaleImageView extends ScaleImageView {
     private BitmapFactory.Options mOptions;
     private int mImageWidth;
     private int mImageHeight;
+    private Scroller mScroller;
+    private int mScrollX;
+    private int mScrollY;
 
     public LargeScaleImageView(Context context) {
-        super(context);
+        this(context, null);
     }
 
     public LargeScaleImageView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        mScroller = new Scroller(context);
     }
 
+    @Override
+    protected void fling(float velocityX, float velocityY) {
+        //super.fling(velocityX, velocityY);
+        mLastX = mScrollX;
+        mLastY = mScrollY;
+        mScroller.fling(mScrollX, mScrollY, (int) velocityX, (int) velocityY, Integer.MIN_VALUE, mImageWidth - getWidth(), Integer.MIN_VALUE,
+                mImageHeight - getHeight());
+    }
+
+    private int mLastX;
+    private int mLastY;
+
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        if (mScroller.computeScrollOffset()) {
+            int curX = mScroller.getCurrX();
+            int curY = mScroller.getCurrY();
+            scrollBy(mLastX - curX, mLastY - curY);
+            mLastX = curX;
+            mLastY = curY;
+        }
+    }
+
+    @Override
+    public void scrollBy(int x, int y) {
+        //super.scrollBy(x, y);
+        mImageRect.offset(x, y);
+        Log.e("main", "dx  " + x + "  dy  " + y);
+        checkSelf();
+        setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
+    }
 
     public void setImagePath(String path) {
         initDecoder(path);
@@ -63,27 +100,26 @@ public class LargeScaleImageView extends ScaleImageView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (mImageRect == null)
             mImageRect = new Rect(0, 0, getMeasuredWidth(), getMeasuredHeight());
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
         if (getDrawable() == null) {
             setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
+        } else {
+            super.onDraw(canvas);
         }
     }
 
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-//        canvas.drawBitmap(mDecoder.decodeRegion(mImageRect, mOptions), 0, 0, null);
-//    }
-
     @Override
     protected void onScroll(float distanceX, float distanceY) {
-        //super.onScroll();
-//        Log.e("main", "range  " + mImageRect);
-//
-//        Log.e("main", "width  " + mImageWidth + "  height  " + mImageHeight);
-        mImageRect.offset((int) distanceX, (int) distanceY);
+        int dx = (int) distanceX;
+        int dy = (int) distanceY;
+        mScrollX += dx;
+        mScrollY += dy;
+        mImageRect.offset(dx, dy);
         checkSelf();
         setImageBitmap(mDecoder.decodeRegion(mImageRect, mOptions));
-       // invalidate();
     }
 
     private void checkSelf() {
