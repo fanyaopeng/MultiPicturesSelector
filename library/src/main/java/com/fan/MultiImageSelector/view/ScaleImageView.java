@@ -270,13 +270,24 @@ public class ScaleImageView extends ImageView {
             if (rectF.width() < getWidth() && rectF.height() < getHeight()) {
                 return;
             }
-            int startX = (int) -rectF.left;
+            int startX;
+            int startY;
             int minX, maxX, minY, maxY;
-            minX = Integer.MIN_VALUE;
-            minY = Integer.MIN_VALUE;
+            if (velocityX < 0) {
+                startX = (int) -rectF.left;
+            } else {
+                startX = (int) -rectF.right;
+            }
+            if (velocityY < 0) {
+                startY = (int) -rectF.top;
+            } else {
+                startY = (int) -rectF.bottom;
+            }
             maxX = (int) (rectF.width() - getWidth());
             maxY = (int) (rectF.height() - getHeight());
-            int startY = (int) -rectF.top;
+            minX = Integer.MIN_VALUE;
+            minY = Integer.MIN_VALUE;
+
 
             mLastFlingX = startX;
             mLastFlingY = startY;
