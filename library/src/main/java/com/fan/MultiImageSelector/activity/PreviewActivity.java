@@ -76,13 +76,13 @@ public class PreviewActivity extends Activity {
         mCheckView.setChecked(true);
     }
 
+    public void edit(View view) {
+        Intent intent = new Intent(this, EditImageViewActivity.class);
+        intent.putExtra("path", paths.get(mPreviewVp.getCurrentItem()));
+        startActivityForResult(intent, requestEdit);
+    }
+
     public void complete(View view) {
-        if (Config.get().isOpenClip) {
-            Intent intent = new Intent(this, EditImageViewActivity.class);
-            intent.putExtra("path", paths.get(mPreviewVp.getCurrentItem()));
-            startActivityForResult(intent, requestEdit);
-            return;
-        }
         List<String> result = new ArrayList<>();
         for (int i = 0; i < mCheckPath.size(); i++) {
             if (mCheckPath.get(i)) {

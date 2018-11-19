@@ -63,7 +63,6 @@ public class ScaleImageView extends ImageView {
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         draw(canvas);
-        //经过缩放的图片的范围 可能是小于0的
         return Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height());
     }
 
@@ -111,6 +110,7 @@ public class ScaleImageView extends ImageView {
         smoothScale(mInitScale);
     }
 
+
     private void checkBorder(boolean isImmediately) {
         RectF rectF = getMatrixRectF();
 //        Log.e("main", rectF.toString());
@@ -119,6 +119,7 @@ public class ScaleImageView extends ImageView {
         float dy = 0;
         float width = getWidth();
         float height = getHeight();
+        Log.e("main", "size  " + width + "  " + height);
         if (rectF.width() >= width) {
             if (rectF.left > 0) {
                 dx = -rectF.left;
@@ -311,7 +312,7 @@ public class ScaleImageView extends ImageView {
                 mLastFlingX = currX;
                 if (!mScroller.isFinished()) {
                     removeCallbacks(this);
-                    ViewCompat.postOnAnimation(ScaleImageView.this, this);
+                    post(this);
                 }
             }
         }
@@ -344,11 +345,15 @@ public class ScaleImageView extends ImageView {
         }
     }
 
+    private RectF mRange;
+
     public void setInitScale(float scale) {
         mInitScale = scale;
         float factor = scale / getCurScale();
         matrix.postScale(factor, factor, getWidth() / 2, getHeight() / 2);
         setImageMatrix(matrix);
+//        mRange = getMatrixRectF();
+//        Log.e("main", "range  " + mRange);
     }
 
     private void smoothScale(float target) {

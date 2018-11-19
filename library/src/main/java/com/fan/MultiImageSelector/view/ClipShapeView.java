@@ -13,6 +13,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.fan.MultiImageSelector.utils.Config;
 import com.fan.MultiImageSelector.utils.Utils;
 
 public class ClipShapeView extends View {
@@ -147,14 +148,26 @@ public class ClipShapeView extends View {
                 mRight = mLeft + 2 * mCornerSize;
             }
         }
+
     }
 
     public void setRange(RectF rectF) {
         mRange = new RectF(rectF);
         mLeft = rectF.left;
         mTop = rectF.top;
-        mRight = rectF.right;
-        mBottom = rectF.bottom;
+        float ratio = Config.get().ratio;
+        if (ratio == 0) {
+            mRight = rectF.right;
+            mBottom = rectF.bottom;
+        } else {
+            if (rectF.width() > rectF.height()) {
+                mBottom = rectF.bottom;
+                mRight = mLeft + rectF.height() * ratio;
+            } else {
+                mRight = rectF.right;
+                mBottom = mTop + rectF.width() / ratio;
+            }
+        }
         invalidate();
     }
 

@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         config.setMaxNum(15);
         config.setMinMum(1);
         config.isOpenCamera = false;
-        config.isOpenClip = true;
+        //config.setRatio(0.5f);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {

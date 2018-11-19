@@ -3,13 +3,20 @@ package com.fan.MultiImageSelector.utils;
 public class Config {
     public int maxNum = 9;
     public int minMum = 0;
-    public boolean isOpenClip = true;
     public boolean isOpenCamera = true;
+    public float ratio;
+
     private static Config sConfig;
     private static Object lock = new Object();
 
     private Config() {
 
+    }
+
+    public void reset() {
+        maxNum = 0;
+        minMum = 0;
+        ratio = 0;
     }
 
     public static Config get() {
@@ -23,6 +30,10 @@ public class Config {
         return sConfig;
     }
 
+    public void setRatio(float ratio) {
+        this.ratio = ratio;
+    }
+
     public void setMaxNum(int maxNum) {
         this.maxNum = maxNum;
 
@@ -32,7 +43,4 @@ public class Config {
         this.minMum = minMum;
     }
 
-    public void setOpenClip(boolean openClip) {
-        isOpenClip = openClip;
-    }
 }
