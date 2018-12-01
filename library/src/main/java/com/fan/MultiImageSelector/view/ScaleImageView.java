@@ -121,7 +121,6 @@ public class ScaleImageView extends ImageView {
         float dy = 0;
         float width = getWidth();
         float height = getHeight();
-        Log.e("main", "size  " + width + "  " + height);
         if (rectF.width() >= width) {
             if (rectF.left > 0) {
                 dx = -rectF.left;
