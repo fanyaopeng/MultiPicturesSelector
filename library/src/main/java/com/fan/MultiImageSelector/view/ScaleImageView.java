@@ -17,6 +17,8 @@ import android.view.ScaleGestureDetector;
 import android.widget.ImageView;
 import android.widget.OverScroller;
 
+import com.fan.MultiImageSelector.utils.Utils;
+
 /**
  * 遗留问题  是否可以支持旋转手势
  */
@@ -322,9 +324,6 @@ public class ScaleImageView extends ImageView {
 
     protected void onScroll(float distanceX, float distanceY) {
         checkIntercept(distanceX);
-        if (getCurScale() == mInitScale) {
-            distanceY = 0;
-        }
         float[] target = checkScroll(distanceX, distanceY);
         matrix.postTranslate(-target[0], -target[1]);
         setImageMatrix(matrix);
@@ -481,22 +480,29 @@ public class ScaleImageView extends ImageView {
         if (d == null) return;
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
-
         int dw = d.getIntrinsicWidth();
         int dh = d.getIntrinsicHeight();
         Log.e("main", "dw  " + dw + "dh  " + dh);
         float scaleW = (float) width / (float) dw;
         float scaleH = (float) height / (float) dh;
-        if (dh > height && dw > width) {
-
+        boolean isLongImage = Utils.isLongImage(dw, dh);
+        if (isLongImage) {
+            scaleW = width / dw;
+            scaleH = scaleW;
         }
         if (mInitScale == 1) {
             mInitScale = Math.min(scaleH, scaleW);
             mMaxScale = mInitScale * 4;
             mCenterScale = mInitScale * 2;
         }
-        matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-        matrix.postScale(mInitScale, mInitScale, width / 2, height / 2);
+        if (!isLongImage) {
+            matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
+            matrix.postScale(mInitScale, mInitScale, width / 2, height / 2);
+        } else {
+            matrix.postTranslate((width - dw) / 2, 0);
+            matrix.postScale(mInitScale, mInitScale, width / 2, 0);
+        }
+
         setImageMatrix(matrix);
         isInitScale = true;
 

@@ -20,12 +20,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.fan.MultiImageSelector.R;
-import com.fan.MultiImageSelector.utils.Config;
 import com.fan.MultiImageSelector.utils.CompressImageTask;
 import com.fan.MultiImageSelector.utils.Utils;
 import com.fan.MultiImageSelector.view.CheckImageView;
 import com.fan.MultiImageSelector.view.GifImageView;
-import com.fan.MultiImageSelector.view.LargeScaleImageView;
 import com.fan.MultiImageSelector.view.ScaleImageView;
 
 import java.util.ArrayList;
@@ -164,13 +162,7 @@ public class PreviewActivity extends Activity {
         public Object instantiateItem(@NonNull ViewGroup container, int position) {
             String p = paths.get(position);
             View result;
-            if (Utils.isLongImage(mPreviewVp.getWidth(), p)) {
-                LargeScaleImageView imageView = new LargeScaleImageView(PreviewActivity.this);
-                imageView.setImagePath(p);
-                container.addView(imageView);
-                result = imageView;
-                imageView.setOnGestureListener(new HandleSingleTap());
-            } else if (!Utils.isGif(p)) {
+            if (!Utils.isGif(p)) {
                 final ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
                 service.execute(new CompressImageTask(p, mPreviewVp.getWidth(), mPreviewVp.getHeight(), new CompressImageTask.OnCompressListener() {
                     @Override

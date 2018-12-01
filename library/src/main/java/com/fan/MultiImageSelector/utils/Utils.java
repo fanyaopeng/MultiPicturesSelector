@@ -33,12 +33,8 @@ public class Utils {
         return path.endsWith("gif");
     }
 
-    public static boolean isLongImage(int width, String path) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-        //宽比大于0.3 或者大于2.0 则认为是长图
-        float radio = (float) options.outWidth / (float) options.outHeight;
-        return options.outWidth >= width && 0.5f > radio;
+    public static boolean isLongImage(float width, float height) {
+        float ratio = width / height;
+        return ratio < 0.5f;
     }
 }
