@@ -156,6 +156,7 @@ public class ClipShapeView extends View {
             if ((mCurScrollRange & TOP) == TOP) {
                 r = mLeft + (mBottom - mTop) * ratio;
             }
+
             if ((mCurScrollRange & RIGHT) == RIGHT) {
                 b = mTop + (mRight - mLeft) / ratio;
             }
