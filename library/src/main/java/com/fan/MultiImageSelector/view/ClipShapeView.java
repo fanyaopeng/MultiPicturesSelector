@@ -55,7 +55,6 @@ public class ClipShapeView extends View {
     private class ScrollCallback extends GestureDetector.SimpleOnGestureListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            //Log.e("main", "dx  " + distanceX + "  dy  " + distanceY);
             if ((mCurScrollRange & LEFT) == LEFT) {
                 mLeft -= distanceX;
             }
@@ -83,9 +82,6 @@ public class ClipShapeView extends View {
         float x = e.getX();
         float y = e.getY();
 
-//        if (isRatio) {
-//            return x < mProfile.right && x > mProfile.left || y < mProfile.bottom || y > mProfile.top;
-//        }
         if (x > mProfile.right || x < mProfile.left || y > mProfile.bottom || y < mProfile.top) {
             //在矩形的外面
             return false;
@@ -146,6 +142,39 @@ public class ClipShapeView extends View {
             if (mProfile.width() < mCornerSize * 2) {
                 mRight = mLeft + 2 * mCornerSize;
             }
+        }
+
+        float ratio = Config.get().ratio;
+        if (isRatio) {
+            float l = mLeft;
+            float t = mTop;
+            float r = mRight;
+            float b = mBottom;
+            if ((mCurScrollRange & LEFT) == LEFT) {
+                b = mTop + (mRight - mLeft) / ratio;
+            }
+            if ((mCurScrollRange & TOP) == TOP) {
+                r = mLeft + (mBottom - mTop) * ratio;
+            }
+            if ((mCurScrollRange & RIGHT) == RIGHT) {
+                b = mTop + (mRight - mLeft) / ratio;
+            }
+            if ((mCurScrollRange & BOTTOM) == BOTTOM) {
+                r = mLeft + (mBottom - mTop) * ratio;
+            }
+
+//            if (b > mProfile.bottom) {
+//                b = mProfile.bottom;
+//                l = mRight - (mBottom - TOP) * ratio;
+//            }
+//            if (r > mProfile.right) {
+//                r = mProfile.right;
+//                t = mBottom - (mRight - mLeft) / ratio;
+//            }
+            mLeft = l;
+            mTop = t;
+            mRight = r;
+            mBottom = b;
         }
     }
 
