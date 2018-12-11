@@ -33,6 +33,7 @@ public class ClipShapeView extends View {
     private int mCurScrollRange = SCROLL_MASK;
     int mProfileWidth;
     private RectF mRange;//初始的范围
+    private boolean isRatio;
 
     public ClipShapeView(Context context) {
         this(context, null);
@@ -82,7 +83,7 @@ public class ClipShapeView extends View {
         float x = e.getX();
         float y = e.getY();
 
-//        if (Config.get().ratio != 0) {
+//        if (isRatio) {
 //            return x < mProfile.right && x > mProfile.left || y < mProfile.bottom || y > mProfile.top;
 //        }
         if (x > mProfile.right || x < mProfile.left || y > mProfile.bottom || y < mProfile.top) {
@@ -129,8 +130,6 @@ public class ClipShapeView extends View {
                 mBottom = mTop + 2 * mCornerSize;
             }
         }
-
-
         if (dx < 0) {
             //往右
             if (mRight > mRange.right) {
@@ -158,7 +157,8 @@ public class ClipShapeView extends View {
         mRight = rectF.right;
         mBottom = rectF.bottom;
         float ratio = Config.get().ratio;
-        if (ratio != 0) {
+        isRatio = ratio != 0;
+        if (isRatio) {
             mBottom = mTop + rectF.width() / ratio;
             if (mBottom - mTop > rectF.height()) {
                 mRight = mLeft + rectF.height() * ratio;
