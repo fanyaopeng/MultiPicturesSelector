@@ -25,12 +25,12 @@ public class ClipShapeView extends View {
     private int mCornerWidth;
     private float mCornerSize;
 
-    private final int LEFT_TOP = 0;
-    private final int LEFT_BOTTOM = 1;
-    private final int RIGHT_TOP = 2;
-    private final int RIGHT_BOTTOM = 3;
-    private final int NO_SCROLL = -1;
-    private int mCurScrollRange = NO_SCROLL;
+    private final int LEFT = 1;
+    private final int TOP = 2;
+    private final int RIGHT = 4;
+    private final int BOTTOM = 8;
+    private final int SCROLL_MASK = 0;
+    private int mCurScrollRange = SCROLL_MASK;
     int mProfileWidth;
     private RectF mRange;//初始的范围
 
@@ -55,23 +55,17 @@ public class ClipShapeView extends View {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             //Log.e("main", "dx  " + distanceX + "  dy  " + distanceY);
-            switch (mCurScrollRange) {
-                case LEFT_TOP:
-                    mLeft -= distanceX;
-                    mTop -= distanceY;
-                    break;
-                case LEFT_BOTTOM:
-                    mLeft -= distanceX;
-                    mBottom -= distanceY;
-                    break;
-                case RIGHT_TOP:
-                    mRight -= distanceX;
-                    mTop -= distanceY;
-                    break;
-                case RIGHT_BOTTOM:
-                    mRight -= distanceX;
-                    mBottom -= distanceY;
-                    break;
+            if ((mCurScrollRange & LEFT) == LEFT) {
+                mLeft -= distanceX;
+            }
+            if ((mCurScrollRange & TOP) == TOP) {
+                mTop -= distanceY;
+            }
+            if ((mCurScrollRange & RIGHT) == RIGHT) {
+                mRight -= distanceX;
+            }
+            if ((mCurScrollRange & BOTTOM) == BOTTOM) {
+                mBottom -= distanceY;
             }
             checkBorder(distanceX, distanceY);
             invalidate();
@@ -87,41 +81,36 @@ public class ClipShapeView extends View {
     private boolean shouldMove(MotionEvent e) {
         float x = e.getX();
         float y = e.getY();
-        if (Config.get().ratio != 0) {
-            return x < mProfile.right && x > mProfile.left || y < mProfile.bottom || y > mProfile.top;
-        }
+
+//        if (Config.get().ratio != 0) {
+//            return x < mProfile.right && x > mProfile.left || y < mProfile.bottom || y > mProfile.top;
+//        }
         if (x > mProfile.right || x < mProfile.left || y > mProfile.bottom || y < mProfile.top) {
             //在矩形的外面
             return false;
         }
-        if (x < mProfile.left + mCornerSize && y < mProfile.top + mCornerSize) {
-            mCurScrollRange = LEFT_TOP;
-            return true;
+        boolean result = false;
+        mCurScrollRange = SCROLL_MASK;
+        if (x < mProfile.left + mCornerSize) {
+            mCurScrollRange |= LEFT;
+            result = true;
         }
-        if (x > mProfile.right - mCornerSize && y < mProfile.top + mCornerSize) {
-            mCurScrollRange = RIGHT_TOP;
-            return true;
+        if (y < mProfile.top + mCornerSize) {
+            mCurScrollRange |= TOP;
+            result = true;
         }
-        if (x < mProfile.left + mCornerSize && y > mProfile.bottom - mCornerSize) {
-            mCurScrollRange = LEFT_BOTTOM;
-            return true;
+        if (x > mProfile.right - mCornerSize) {
+            mCurScrollRange |= RIGHT;
+            result = true;
         }
-        if (x > mProfile.right - mCornerSize && y > mProfile.bottom - mCornerSize) {
-            mCurScrollRange = RIGHT_BOTTOM;
-            return true;
+        if (y > mProfile.bottom - mCornerSize) {
+            mCurScrollRange |= BOTTOM;
+            result = true;
         }
-        return false;
+        return result;
     }
 
     private void checkBorder(float dx, float dy) {
-        float ratio = Config.get().ratio;
-        if (ratio != 0) {
-            mLeft -= dx;
-            mRight -= dx;
-            mTop -= dy;
-            mBottom -= dy;
-            return;
-        }
         RectF rectF = new RectF(mRange);
         if (dy < 0) {
             //往下
