@@ -87,6 +87,9 @@ public class ClipShapeView extends View {
     private boolean shouldMove(MotionEvent e) {
         float x = e.getX();
         float y = e.getY();
+        if (Config.get().ratio != 0) {
+            return x < mProfile.right && x > mProfile.left || y < mProfile.bottom || y > mProfile.top;
+        }
         if (x > mProfile.right || x < mProfile.left || y > mProfile.bottom || y < mProfile.top) {
             //在矩形的外面
             return false;
@@ -111,6 +114,14 @@ public class ClipShapeView extends View {
     }
 
     private void checkBorder(float dx, float dy) {
+        float ratio = Config.get().ratio;
+        if (ratio != 0) {
+            mLeft -= dx;
+            mRight -= dx;
+            mTop -= dy;
+            mBottom -= dy;
+            return;
+        }
         RectF rectF = new RectF(mRange);
         if (dy < 0) {
             //往下
@@ -148,7 +159,6 @@ public class ClipShapeView extends View {
                 mRight = mLeft + 2 * mCornerSize;
             }
         }
-
     }
 
     public void setRange(RectF rectF) {
@@ -159,8 +169,12 @@ public class ClipShapeView extends View {
         mRight = rectF.right;
         mBottom = rectF.bottom;
         float ratio = Config.get().ratio;
-        if (ratio == 0) {
-
+        if (ratio != 0) {
+            mBottom = mTop + rectF.width() / ratio;
+            if (mBottom - mTop > rectF.height()) {
+                mRight = mLeft + rectF.height() * ratio;
+                mBottom = rectF.bottom;
+            }
         }
         invalidate();
     }
@@ -169,7 +183,6 @@ public class ClipShapeView extends View {
     public boolean onTouchEvent(MotionEvent event) {
         return mDetector.onTouchEvent(event);
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {

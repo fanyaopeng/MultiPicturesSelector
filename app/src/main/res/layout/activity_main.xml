@@ -18,20 +18,4 @@
         android:layout_height="wrap_content"
         android:onClick="start"
         android:text="选择" />
-
-    <com.fan.MultiImageSelector.view.ViewGroupTest
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="你好" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="你好" />
-    </com.fan.MultiImageSelector.view.ViewGroupTest>
 </FrameLayout>

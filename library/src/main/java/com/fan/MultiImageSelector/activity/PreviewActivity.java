@@ -3,6 +3,7 @@ package com.fan.MultiImageSelector.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -164,7 +165,16 @@ public class PreviewActivity extends Activity {
             View result;
             if (!Utils.isGif(p)) {
                 final ScaleImageView imageView = new ScaleImageView(PreviewActivity.this);
-                service.execute(new CompressImageTask(p, mPreviewVp.getWidth(), mPreviewVp.getHeight(), new CompressImageTask.OnCompressListener() {
+
+                int compressWidth = mPreviewVp.getWidth();
+                int compressHeight = mPreviewVp.getHeight();
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(p, options);
+                if (Utils.isLongImage(options.outWidth, options.outHeight)) {
+                    compressHeight = options.outHeight;
+                }
+                service.execute(new CompressImageTask(p, compressWidth, compressHeight, new CompressImageTask.OnCompressListener() {
                     @Override
                     public void onStart() {
                     }

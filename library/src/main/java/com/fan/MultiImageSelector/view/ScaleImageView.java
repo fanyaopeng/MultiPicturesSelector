@@ -27,7 +27,7 @@ public class ScaleImageView extends ImageView {
     private GestureDetector mGestureDetector;
     private float mMaxScale = 4;
     private float mCenterScale = 2;
-    private float mInitScale = 1.0f;
+    private float mInitScale = -1;
     private ScaleGestureDetector mScaleGestureDetector;
     private float[] mScaleFocus = new float[2];
     private boolean isNeedCheckBorder;
@@ -272,29 +272,17 @@ public class ScaleImageView extends ImageView {
             if (rectF.width() < getWidth() && rectF.height() < getHeight()) {
                 return;
             }
-            int startX;
-            int startY;
+            int startX = (int) -rectF.left;
+            int startY = (int) -rectF.top;
             int minX, maxX, minY, maxY;
-            if (velocityX < 0) {
-                startX = (int) -rectF.left;
-            } else {
-                startX = (int) -rectF.right;
-            }
-            if (velocityY < 0) {
-                startY = (int) -rectF.top;
-            } else {
-                startY = (int) -rectF.bottom;
-            }
             maxX = (int) (rectF.width() - getWidth());
             maxY = (int) (rectF.height() - getHeight());
-            minX = Integer.MIN_VALUE;
-            minY = Integer.MIN_VALUE;
-
-
+            minX = 0;
+            minY = 0;
             mLastFlingX = startX;
             mLastFlingY = startY;
 
-            mScroller.fling(startX, startY, velocityX, velocityY,
+            mScroller.fling(startX, startY, -velocityX, -velocityY,
                     minX, maxX, minY, maxY);
             post(this);
         }
@@ -302,15 +290,15 @@ public class ScaleImageView extends ImageView {
         @Override
         public void run() {
             if (mScroller.computeScrollOffset()) {
-                int currX = mScroller.getCurrX();
+                int curX = mScroller.getCurrX();
                 int curY = mScroller.getCurrY();
-                float dx = mLastFlingX - currX;
+                float dx = mLastFlingX - curX;
                 float dy = mLastFlingY - curY;
-                matrix.postTranslate(-dx, -dy);
+                matrix.postTranslate(dx, dy);
                 checkBorder(true);
                 setImageMatrix(matrix);
                 mLastFlingY = curY;
-                mLastFlingX = currX;
+                mLastFlingX = curX;
                 if (!mScroller.isFinished()) {
                     removeCallbacks(this);
                     post(this);
@@ -486,15 +474,15 @@ public class ScaleImageView extends ImageView {
         float scaleH = (float) height / (float) dh;
         boolean isLongImage = Utils.isLongImage(dw, dh);
         if (isLongImage) {
-            scaleW = width / dw;
+            scaleW = (float) width / (float) dw;
             scaleH = scaleW;
         }
-        if (mInitScale == 1) {
+        if (mInitScale == -1) {
             mInitScale = Math.min(scaleH, scaleW);
             mMaxScale = mInitScale * 4;
             mCenterScale = mInitScale * 2;
         }
-        if (!isLongImage) {
+        if (!isLongImage || mInitScale != -1) {
             matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
             matrix.postScale(mInitScale, mInitScale, width / 2, height / 2);
         } else {
