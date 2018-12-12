@@ -107,7 +107,7 @@ public class ClipShapeView extends View {
         return result;
     }
 
-    private void checkBorder(float dx, float dy) {
+    private void checkNormalBorder(float dx, float dy) {
         RectF rectF = new RectF(mRange);
         if (dy < 0) {
             //往下
@@ -143,39 +143,47 @@ public class ClipShapeView extends View {
                 mRight = mLeft + 2 * mCornerSize;
             }
         }
+    }
 
+    private void checkRatioBorder(float dx, float dy) {
         float ratio = Config.get().ratio;
-        if (isRatio) {
-            float l = mLeft;
-            float t = mTop;
-            float r = mRight;
-            float b = mBottom;
-            if ((mCurScrollRange & LEFT) == LEFT) {
-                b = mTop + (mRight - mLeft) / ratio;
-            }
-            if ((mCurScrollRange & TOP) == TOP) {
-                r = mLeft + (mBottom - mTop) * ratio;
-            }
+        float l = mLeft;
+        float t = mTop;
+        float r = mRight;
+        float b = mBottom;
+        int min = mCornerWidth * 2;
+        boolean isInSize = mProfile.width() > min && mProfile.height() > min;
+        //  boolean isInRange =mRight<mProfile.right || x < mProfile.left || y > mProfile.bottom || y < mProfile.top
+        //只对一个边有效
+        if ((mCurScrollRange & LEFT) == LEFT) {
+            b = mTop + (mRight - mLeft) / ratio;
+        } else if ((mCurScrollRange & TOP) == TOP) {
+            r = mLeft + (mBottom - mTop) * ratio;
+        } else if ((mCurScrollRange & RIGHT) == RIGHT) {
+            b = mTop + (mRight - mLeft) / ratio;
+        } else if ((mCurScrollRange & BOTTOM) == BOTTOM) {
+            r = mLeft + (mBottom - mTop) * ratio;
+        }
 
-            if ((mCurScrollRange & RIGHT) == RIGHT) {
-                b = mTop + (mRight - mLeft) / ratio;
-            }
-            if ((mCurScrollRange & BOTTOM) == BOTTOM) {
-                r = mLeft + (mBottom - mTop) * ratio;
-            }
+//        if (b > mProfile.bottom) {
+//            b = mProfile.bottom;
+//            l = mRight - (mBottom - TOP) * ratio;
+//        }
+//        if (r > mProfile.right) {
+//            r = mProfile.right;
+//            t = mBottom - (mRight - mLeft) / ratio;
+//        }
+        mLeft = l;
+        mTop = t;
+        mRight = r;
+        mBottom = b;
+    }
 
-//            if (b > mProfile.bottom) {
-//                b = mProfile.bottom;
-//                l = mRight - (mBottom - TOP) * ratio;
-//            }
-//            if (r > mProfile.right) {
-//                r = mProfile.right;
-//                t = mBottom - (mRight - mLeft) / ratio;
-//            }
-            mLeft = l;
-            mTop = t;
-            mRight = r;
-            mBottom = b;
+    private void checkBorder(float dx, float dy) {
+        if (!isRatio) {
+            checkNormalBorder(dx, dy);
+        } else {
+            checkRatioBorder(dx, dy);
         }
     }
 

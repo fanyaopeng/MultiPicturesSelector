@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.fan.MultiImageSelector.utils.Config;
@@ -34,12 +36,27 @@ public class MainActivity extends AppCompatActivity {
         vp = findViewById(R.id.vp);
     }
 
-    public void start(View view) {
+    private void config() {
         Config config = Config.get();
-        config.setMaxNum(15);
-        config.setMinMum(1);
-        config.isOpenCamera = false;
-        config.setRatio(0.5f);
+        EditText max = findViewById(R.id.et_max);
+        EditText min = findViewById(R.id.et_min);
+        if (max.length() != 0) {
+            config.setMaxNum(Integer.parseInt(max.getText().toString()));
+        }
+        if (min.length() != 0) {
+            config.setMinMum(Integer.parseInt(min.getText().toString()));
+        }
+        CheckBox camera = findViewById(R.id.ck_open_camera);
+        config.isOpenCamera = camera.isChecked();
+        CheckBox ratio = findViewById(R.id.ck_open_ratio);
+        EditText etRatio = findViewById(R.id.et_ratio);
+        if (ratio.isChecked()) {
+            config.setRatio(Float.parseFloat(etRatio.getText().toString()));
+        }
+    }
+
+    public void start(View view) {
+        config();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String permission = Manifest.permission.READ_EXTERNAL_STORAGE;
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {

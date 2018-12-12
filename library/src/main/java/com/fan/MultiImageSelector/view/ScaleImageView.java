@@ -8,7 +8,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -331,16 +330,6 @@ public class ScaleImageView extends ImageView {
         }
     }
 
-    private RectF mRange;
-
-    public void setInitScale(float scale) {
-        mInitScale = scale;
-        float factor = scale / getCurScale();
-        matrix.postScale(factor, factor, getWidth() / 2, getHeight() / 2);
-        setImageMatrix(matrix);
-//        mRange = getMatrixRectF();
-//        Log.e("main", "range  " + mRange);
-    }
 
     private void smoothScale(float target) {
         post(new SmoothScaleTask(target));
@@ -454,11 +443,11 @@ public class ScaleImageView extends ImageView {
         init();
     }
 
-    @Override
-    public void setImageBitmap(Bitmap bm) {
-        matrix.reset();
+    public void setInitScale(float scale) {
+        mInitScale = scale;
         isInitScale = false;
-        super.setImageBitmap(bm);
+        matrix.reset();
+        init();
     }
 
     private void init() {
@@ -472,24 +461,24 @@ public class ScaleImageView extends ImageView {
         Log.e("main", "dw  " + dw + "dh  " + dh);
         float scaleW = (float) width / (float) dw;
         float scaleH = (float) height / (float) dh;
-        boolean isLongImage = Utils.isLongImage(dw, dh);
-        if (isLongImage) {
-            scaleW = (float) width / (float) dw;
-            scaleH = scaleW;
-        }
+        float transX = (width - dw) / 2;
+        float transY = (height - dh) / 2;
+        float scaleCenterX = width / 2;
+        float scaleCenterY = height / 2;
         if (mInitScale == -1) {
             mInitScale = Math.min(scaleH, scaleW);
-            mMaxScale = mInitScale * 4;
-            mCenterScale = mInitScale * 2;
+            boolean isLongImage = Utils.isLongImage(dw, dh);
+            if (isLongImage) {
+                mInitScale = Math.max(scaleH, scaleW);
+                transY = 0;
+                scaleCenterY = 0;
+            }
         }
-        if (!isLongImage || mInitScale != -1) {
-            matrix.postTranslate((width - dw) / 2, (height - dh) / 2);
-            matrix.postScale(mInitScale, mInitScale, width / 2, height / 2);
-        } else {
-            matrix.postTranslate((width - dw) / 2, 0);
-            matrix.postScale(mInitScale, mInitScale, width / 2, 0);
-        }
+        mMaxScale = mInitScale * 4;
+        mCenterScale = mInitScale * 2;
 
+        matrix.postTranslate(transX, transY);
+        matrix.postScale(mInitScale, mInitScale, scaleCenterX, scaleCenterY);
         setImageMatrix(matrix);
         isInitScale = true;
 
