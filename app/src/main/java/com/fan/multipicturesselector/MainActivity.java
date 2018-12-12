@@ -83,30 +83,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0 && resultCode == RESULT_OK) {
-            if (paths != null) paths.clear();
             paths = data.getStringArrayListExtra("paths");
-            imageViews.clear();
+            List<ImageView> imageViews = new ArrayList<>();
             for (String p : paths) {
                 ImageView imageView = new ImageView(MainActivity.this);
                 Bitmap result = Utils.compress(p, MainActivity.this.getResources().getDisplayMetrics().widthPixels, vp.getHeight());
                 imageView.setImageBitmap(result);
                 imageViews.add(imageView);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
             }
-            if (imageViews.size() != 0)
-                vp.setAdapter(new ImageAdapter());
+            vp.setAdapter(new ImageAdapter(imageViews));
         }
     }
 
 
-    private List<ImageView> imageViews = new ArrayList<>();
-
     private class ImageAdapter extends PagerAdapter {
+        private List<ImageView> imageViews;
+
+        public ImageAdapter(List<ImageView> imageViews) {
+            this.imageViews = imageViews;
+        }
 
         @Override
         public int getCount() {
-            return paths.size();
+            return imageViews.size();
         }
 
         @Override
