@@ -241,7 +241,7 @@ public class ScaleImageView extends ImageView {
             if (isScale) return true;//滑动的时候 如果在缩放 则 无操作
             ScaleImageView.this.onScroll(distanceX, distanceY);
             isNeedCheckBorder = true;
-            return false;
+            return true;
         }
 
         @Override
